@@ -1,12 +1,12 @@
-"""Multi-GPU tile Cholesky for the preliminary results of the CDS&E proposal (2026-10-20).
+"""Multi-GPU tile Cholesky pilot (2026-10-20).
 
 Factorizes the covariance of a Matern (nu = 3/2) Gaussian process with nugget, built
 tile by tile, with the block rows of the factor distributed cyclically over the GPUs
 visible to PyTorch (or over a list of pseudo-devices on a CPU for testing).  Each GPU
 owns the tiles L_{ik} of its block rows i; at panel k the owner factorizes L_{kk},
 every GPU receives block row k (the tiles L_{kj}, j <= k, that the trailing update
-needs), and updates its own rows independently.  This is the same tile algorithm as the
-proposal's Objective pages (dense tiles here; the rank and precision rules act on the
+needs), and updates its own rows independently.  This is the tile algorithm that the adaptive
+rank and precision rules build on (dense tiles here; the rank and precision rules act on the
 tiles L_{ik} and do not change the communication pattern).  Reports wall time, peak
 memory per GPU, and the log-determinant against a single-device factorization.
 
@@ -88,7 +88,7 @@ def main():
     ap.add_argument("--eta", type=float, default=0.05)
     ap.add_argument("--check_single", action="store_true", help="also factor on the first device alone and compare")
     ap.add_argument("--seed", type=int, default=20261020)
-    ap.add_argument("--out", type=str, default="../results/preliminary")
+    ap.add_argument("--out", type=str, default="../results")
     a = ap.parse_args()
     torch.manual_seed(a.seed)
     devices = [torch.device(d) for d in a.devices.split(",")]

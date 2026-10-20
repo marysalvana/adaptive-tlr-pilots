@@ -1,10 +1,10 @@
 # Adaptive tile low-rank (TLR) Gaussian process inference: pilot experiments
 
-Codes and results behind the preliminary results quoted in the NSF CDS&E proposal
-*Adaptive Mixed-Precision Tile Low-Rank Methods for Scalable Space-Time Gaussian Process
-Inference* (M. L. O. Salvana, University of Connecticut, and Z. Mohamed, Oberlin College).
-Every script fixes its random seed and writes a JSON file with its settings and outputs into
-`results/`; the logs of the runs reported in the proposal are in `results/logs/`.
+Small, reproducible experiments on choosing the rank of every covariance tile from a
+condition-dependent error budget rather than a fixed tolerance, with a Vecchia baseline, a
+multi-GPU tile Cholesky, standard errors, and a Metropolis-Hastings run with the adaptive-TLR
+likelihood.  Every script fixes its random seed and writes a JSON file with its settings and
+outputs into `results/`; the logs of the reported runs are in `results/logs/`.
 
 ## 1. Rank rules: fixed tolerance vs. the adaptive budget (`codes/11_tlr_rank_rules.py`)
 
@@ -49,28 +49,6 @@ time, peak memory per GPU, and the log-determinant against a single-GPU run.
 
 Output: `multigpu_tile_cholesky_n{N}_b{b}_{k}x{device}.json`.
 
-## 4. Standard errors for the rank-rule pilot (`codes/15_pilot_standard_errors.py`)
-
-Observed information at the dense and adaptive-TLR maximum-likelihood estimates of
-experiment 1, by central finite differences in log(theta), so that the adaptive estimates can
-be compared with the dense ones in standard-error units.
-
-    cd codes && python3 15_pilot_standard_errors.py --n 10000 --out ../results
-
-Output: `pilot_standard_errors_n{N}.json`.
-
-## 5. Metropolis-Hastings with the adaptive-TLR likelihood (`codes/16_tlr_mcmc_pilot.py`)
-
-Two random-walk Metropolis-Hastings chains on the same simulated field, same seed and
-proposal: the exact likelihood and the adaptive-TLR likelihood (tau = 0.9, ranks re-chosen at
-every proposal).  Reports posterior means, standard deviations, 95% credible intervals, the
-difference of posterior means in units of the exact posterior standard deviation, acceptance
-rates, factorization failures, and held-out prediction from the posterior mean.
-
-    cd codes && python3 16_tlr_mcmc_pilot.py --n 5000 --iters 3000 --burn 500 --out ../results
-
-Output: `tlr_mcmc_pilot_n{N}.json` and the chains as `.npy`.
-
 ## Environment
 
 Local runs: macOS, Python 3 with NumPy 2.4 / SciPy 1.17 / PyTorch 2.10 (CPU), R 4.x with
@@ -94,9 +72,9 @@ form `solve_triangular(L_kk^T, M, left=False)` gave wrong factors on CUDA in PyT
   7 to 8 of b = 250); the tau = 0.9 MLE completed all 80 evaluations and returned
   (1.396, 0.326, 0.036) with RMSE 0.2056, CRPS 0.1158, and 90% coverage 0.937, the dense values.
 * Vecchia, N = 10,000, m = 30 (`vecchia_n10000_m30.json`): (1.398, 0.324, 0.036), RMSE 0.2055,
-  CRPS 0.1160, coverage 0.937, fit in 3 s; the reference point for the likelihood-changing methods of the proposal's Section 2.
+  CRPS 0.1160, coverage 0.937, fit in 3 s; the reference point for likelihood-changing methods such as Vecchia's approximation.
 * Multi-GPU tile Cholesky, UConn Storrs (`multigpu_tile_cholesky_n*_b1000_{2,3}xcuda.json`,
-  `results/logs/cdse-tile-chol-*.out`): on two NVIDIA A30 GPUs (24 GB, node gpu48) and three NVIDIA L40
+  `results/logs/tile-chol-*.out`): on two NVIDIA A30 GPUs (24 GB, node gpu48) and three NVIDIA L40
   GPUs (46 GB, node gpu50) at N = 20,000, 40,000, 60,000 the log-determinant equals the
   single-GPU value to all printed digits.  At N = 60,000 the factor took 14.7 GB on one GPU,
   7.7 to 8.0 GB per GPU on the two A30s, and 5.7 to 6.0 GB per GPU on the three L40s, in

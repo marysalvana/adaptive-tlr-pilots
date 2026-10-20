@@ -1,13 +1,13 @@
 """Standard errors for the rank-rule pilot (2026-10-20), so the pilot can be scored against the
-proposal's criterion "reproduce the dense estimates within one standard error".
+criterion "reproduce the dense estimates within one standard error".
 
 For the dense fit and the adaptive-TLR fit (tau = 0.9) at their maximum-likelihood estimates
-in results/preliminary/tlr_rank_rules_n{N}.json, the observed information is computed by
+in results/tlr_rank_rules_n{N}.json, the observed information is computed by
 central finite differences of the log-likelihood in log(theta) (step h), inverted, and
 transformed to the theta scale (SE_theta = theta * SE_log).  Reports the standard errors and
 the differences between the adaptive and dense estimates in dense standard-error units.
 
-Usage:  python3 15_pilot_standard_errors.py --n 10000 --out ../results/preliminary
+Usage:  python3 15_pilot_standard_errors.py --n 10000 --out ../results
 Reproducible: deterministic given the CSV and JSON written by 11_tlr_rank_rules.py.
 """
 import argparse, json, os, sys, time, importlib.util
@@ -36,7 +36,7 @@ def main():
     ap.add_argument("--n", type=int, default=10000)
     ap.add_argument("--b", type=int, default=250)
     ap.add_argument("--h", type=float, default=0.02, help="finite-difference step in log(theta)")
-    ap.add_argument("--out", type=str, default="../results/preliminary")
+    ap.add_argument("--out", type=str, default="../results")
     a = ap.parse_args()
     obs = np.loadtxt(os.path.join(a.out, f"sim_n{a.n}_obs.csv"), delimiter=",", skiprows=1)
     S, y = obs[:, :2], obs[:, 2]

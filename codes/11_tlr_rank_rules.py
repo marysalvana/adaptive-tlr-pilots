@@ -1,11 +1,11 @@
-"""Preliminary rank-adaptive TLR experiment for the CDS&E proposal (2026-10-20).
+"""Rank-adaptive TLR pilot experiment (2026-10-20).
 
 Compares three ways of choosing the rank of every off-diagonal covariance tile of a
 Matern (nu = 3/2) Gaussian process with nugget, on a simulated field:
 
   dense     the exact covariance (reference);
   fixed     fixed relative Frobenius tolerance eps per tile, as in ExaGeoStat/HiCMA;
-  adaptive  the proposal's condition-aware absolute budget
+  adaptive  the condition-aware absolute budget
                 e_max = tau * b * m(theta) / N,   m(theta) = sigma2 * eta (the nugget),
             which guarantees ||Delta Sigma||_F <= tau * m(theta) <= tau * lambda_min(Sigma),
             so Sigma^TLR stays positive definite (Weyl), for any theta the optimizer visits.
@@ -18,7 +18,7 @@ held-out points (RMSE, CRPS, 90% interval coverage).  Everything runs on a CPU i
 NumPy/SciPy; Sigma^TLR is assembled densely so that the factorization itself is exact
 and the only approximation is the tile truncation (the quantity the rules control).
 
-Usage:  python3 11_tlr_rank_rules.py --n 10000 --out ../results/preliminary
+Usage:  python3 11_tlr_rank_rules.py --n 10000 --out ../results
 Reproducible: fixed seeds; all settings are recorded in the JSON output.
 """
 import argparse, json, os, time
@@ -175,7 +175,7 @@ def main():
     ap.add_argument("--mle", type=str, default="dense,fixed:1e-2,fixed:1e-3,adaptive:0.9",
                     help="comma list of rules to fit by maximum likelihood; '' to skip")
     ap.add_argument("--seed", type=int, default=20261020)
-    ap.add_argument("--out", type=str, default="../results/preliminary")
+    ap.add_argument("--out", type=str, default="../results")
     a = ap.parse_args()
 
     rng = np.random.default_rng(a.seed)

@@ -1,19 +1,19 @@
 #!/usr/bin/env Rscript
-# Vecchia (GpGp) baseline for the preliminary TLR experiment of the CDS&E proposal (2026-10-20).
+# Vecchia (GpGp) baseline for the rank-adaptive TLR pilot (2026-10-20).
 #
 # Fits the same simulated Matern(3/2) field with nugget that 11_tlr_rank_rules.py writes to
-# results/preliminary/sim_n{N}_obs.csv, by Vecchia's approximation with m nearest neighbors
+# results/sim_n{N}_obs.csv, by Vecchia's approximation with m nearest neighbors
 # (GpGp, Guinness 2018), and predicts the same held-out points.  Reports the estimates of
 # (sigma2, range, nugget), wall time, peak memory, and RMSE / CRPS / 90% coverage, so that
 # the dense, fixed-tolerance TLR, adaptive TLR, and Vecchia fits can be read side by side.
 #
-# Usage:  Rscript 12_vecchia_baseline.R 10000 [m=30] [../results/preliminary]
+# Usage:  Rscript 12_vecchia_baseline.R 10000 [m=30] [../results]
 # Reproducible: GpGp's fit is deterministic given the data and the neighbor ordering.
 suppressPackageStartupMessages(library(GpGp))
 args <- commandArgs(trailingOnly = TRUE)
 N   <- if (length(args) >= 1) as.integer(args[1]) else 10000L
 m   <- if (length(args) >= 2) as.integer(args[2]) else 30L
-dir <- if (length(args) >= 3) args[3] else "../results/preliminary"
+dir <- if (length(args) >= 3) args[3] else "../results"
 
 obs  <- read.csv(file.path(dir, sprintf("sim_n%d_obs.csv", N)))
 hold <- read.csv(file.path(dir, sprintf("sim_n%d_holdout.csv", N)))
@@ -27,7 +27,7 @@ fit <- fit_model(y, locs, X = X, covfun_name = "matern15_isotropic",
 t_fit <- proc.time()[["elapsed"]] - t0
 # GpGp's matern15_isotropic parameters: (variance, range, nugget) with nugget relative to variance
 cp <- fit$covparms
-# GpGp's range parameterization: cov = sigma2 (1 + d/range) exp(-d/range); the proposal's script
+# GpGp's range parameterization: cov = sigma2 (1 + d/range) exp(-d/range); the rank-rule script
 # uses sqrt(3) d / r, so r_proposal = sqrt(3) * range_GpGp.
 theta_hat <- c(sigma2 = cp[1], range = sqrt(3) * cp[2], eta = cp[3])
 

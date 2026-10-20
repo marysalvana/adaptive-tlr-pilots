@@ -1,13 +1,13 @@
-"""Objective 2 pilot (2026-10-20): Metropolis-Hastings for a Matern(3/2) Gaussian process with
+"""MCMC pilot (2026-10-20): Metropolis-Hastings for a Matern(3/2) Gaussian process with
 nugget, run twice on the same simulated field with the same seed and proposal: once with the
-exact (dense) likelihood and once with the adaptive-TLR likelihood of Objective 1 (tau = 0.9,
+exact (dense) likelihood and once with the adaptive-TLR likelihood (tau = 0.9,
 ranks re-chosen at every proposal).  Reports posterior means, standard deviations, and 95%
 credible intervals of (sigma2, range, eta), the difference of posterior means in units of the
 dense posterior SD, acceptance rates, factorization failures, and held-out prediction from the
 posterior mean.  Flat priors on log(theta) inside wide bounds; random-walk proposals on
 log(theta) whose scale is tuned to 25-35% acceptance during burn-in and then frozen.
 
-Usage:  python3 16_tlr_mcmc_pilot.py --n 5000 --iters 3000 --burn 500 --out ../results/preliminary
+Usage:  python3 16_tlr_mcmc_pilot.py --n 5000 --iters 3000 --burn 500 --out ../results
 Reproducible: fixed seeds; settings recorded in the JSON output.
 """
 import argparse, json, os, time, importlib.util
@@ -59,7 +59,7 @@ def main():
     ap.add_argument("--iters", type=int, default=3000)
     ap.add_argument("--burn", type=int, default=500)
     ap.add_argument("--seed", type=int, default=20261020)
-    ap.add_argument("--out", type=str, default="../results/preliminary")
+    ap.add_argument("--out", type=str, default="../results")
     a = ap.parse_args()
     rng = np.random.default_rng(a.seed)
     theta_true = np.array([a.sigma2, a.range, a.eta]); n_tot = a.n + a.n_pred
