@@ -1,0 +1,28 @@
+{
+ "settings": {
+  "n": 20000,
+  "b": 1000,
+  "devices": "cuda:0,cuda:1",
+  "range": 0.3,
+  "eta": 0.05,
+  "check_single": true,
+  "seed": 20261020,
+  "out": "../results/preliminary"
+ },
+ "n_tiles": 20,
+ "devices": [
+  "cuda:0",
+  "cuda:1"
+ ],
+ "seconds_multi": 0.9700949406251311,
+ "logdet_multi": -58653.769805208125,
+ "factor_gb": 1.68,
+ "peak_gb_per_device": [
+  0.98483968,
+  1.08083968
+ ],
+ "seconds_single": 0.579041057266295,
+ "logdet_single": -58653.769805208125,
+ "logdet_abs_diff": 0.0,
+ "peak_gb_single": 1.736840192
+}

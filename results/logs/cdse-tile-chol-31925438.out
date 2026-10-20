@@ -1,0 +1,13 @@
+name, memory.total [MiB]
+NVIDIA A30, 24576 MiB
+NVIDIA A30, 24576 MiB
+NVIDIA A30, 24576 MiB
+multi-device (2 x cuda): N=20000 b=1000 nB=20 time=1.0s logdet=-58653.769805 factor=1.68 GB peak/GPU=[0.98483968, 1.08083968]
+single-device: time=0.6s logdet=-58653.769805 |diff|=0.00e+00 speedup=0.60x
+saved ../results/preliminary/multigpu_tile_cholesky_n20000_b1000_2xcuda.json
+multi-device (2 x cuda): N=40000 b=1000 nB=40 time=3.8s logdet=-118163.474040 factor=6.56 GB peak/GPU=[3.54515968, 3.72115968]
+single-device: time=3.7s logdet=-118163.474040 |diff|=0.00e+00 speedup=0.98x
+saved ../results/preliminary/multigpu_tile_cholesky_n40000_b1000_2xcuda.json
+multi-device (2 x cuda): N=60000 b=1000 nB=60 time=9.4s logdet=-177784.588254 factor=14.64 GB peak/GPU=[7.70547968, 7.96147968]
+single-device: time=11.5s logdet=-177784.588254 |diff|=0.00e+00 speedup=1.22x
+saved ../results/preliminary/multigpu_tile_cholesky_n60000_b1000_2xcuda.json

@@ -1,0 +1,13 @@
+name, memory.total [MiB]
+NVIDIA L40, 46068 MiB
+NVIDIA L40, 46068 MiB
+NVIDIA L40, 46068 MiB
+multi-device (3 x cuda): N=20000 b=1000 nB=20 time=3.3s logdet=-58653.769805 factor=1.68 GB peak/GPU=[0.83283968, 0.91283968, 0.82483968]
+single-device: time=2.9s logdet=-58653.769805 |diff|=0.00e+00 speedup=0.88x
+saved ../results/preliminary/multigpu_tile_cholesky_n20000_b1000_3xcuda.json
+multi-device (3 x cuda): N=40000 b=1000 nB=40 time=15.2s logdet=-118163.474040 factor=6.56 GB peak/GPU=[2.91315968, 2.72115968, 2.77715968]
+single-device: time=20.8s logdet=-118163.474040 |diff|=0.00e+00 speedup=1.38x
+saved ../results/preliminary/multigpu_tile_cholesky_n40000_b1000_3xcuda.json
+multi-device (3 x cuda): N=60000 b=1000 nB=60 time=40.7s logdet=-177784.588254 factor=14.64 GB peak/GPU=[5.68147968, 5.79347968, 5.97747968]
+single-device: time=67.9s logdet=-177784.588254 |diff|=0.00e+00 speedup=1.67x
+saved ../results/preliminary/multigpu_tile_cholesky_n60000_b1000_3xcuda.json
