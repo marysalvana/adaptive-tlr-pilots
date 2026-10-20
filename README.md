@@ -80,4 +80,14 @@ form `solve_triangular(L_kk^T, M, left=False)` gave wrong factors on CUDA in PyT
   7.7 to 8.0 GB per GPU on the two A30s, and 5.7 to 6.0 GB per GPU on the three L40s, in
   9.4 s and 40.7 s against 11.5 s and 67.9 s on one GPU of the same node (block rows are
   staged through host memory, see Environment; the pilot measures memory per GPU, not speed).
+* Standard errors, N = 10,000 (`pilot_standard_errors_n10000.json`, `results/logs/pilot_se_n10000.log`):
+  observed-information standard errors of the dense fit are (0.61, 0.051, 0.016) for
+  (sigma2, range, eta); the adaptive tau = 0.9 estimates differ from the dense ones by at most
+  0.05 standard errors, the Vecchia estimates by at most 0.01, and the fixed eps = 1e-3 range
+  by 4.4 standard errors.
+* Timing caveat for experiment 1: Sigma^TLR is assembled densely and factorized exactly, so
+  the wall times of the rank rules (ranks re-chosen at every evaluation, SVD of every tile)
+  are not comparable with a TLR Cholesky and should not be read as the method's cost.
+* Metropolis-Hastings pilot, N = 5,000 (`results/logs/tlr_mcmc_n5000.log`): in progress at the time of
+  writing (exact chain first, adaptive-TLR chain second).
 * N = 20,000 rank-rule run (`results/logs/tlr_n20000.log`): in progress at the time of writing.
