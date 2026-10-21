@@ -129,8 +129,9 @@ values of the factor relative to a dense factor (N(N+1)/2 values).
   entries), so the field is simulated from a tau = 0.02 TLR factor (`--sim tlr --dense 0`, 4.3% of a dense factor) and
   only completion and storage are reported: eps = 1e-4 fails to factorize; adaptive completes at 2.9% of a dense factor
   (mean rank 2.9), predictions RMSE 0.2204 (`tlrchol-n100000-31998652.out`).
-* Figure: `codes/20_pilot_results_figure.py` draws factor storage and log-likelihood error against N with the failed
-  tolerances marked (`results/pilot_results.pdf`).
+* Figure: `codes/20_pilot_results_figure.py` draws factor storage, log-likelihood error, and the fitted nugget of the
+  dense, adaptive-TLR, and Vecchia (30 and 60 neighbors) fits against N, with the failed tolerances marked
+  (`results/pilot_results.pdf`).
 
 ### 5. Small nugget and the Vecchia baseline priced (`codes/11_tlr_rank_rules.py`, `codes/12_vecchia_baseline.R`)
 
