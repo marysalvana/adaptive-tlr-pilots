@@ -1,0 +1,10 @@
+node=cn634.storrs.hpc.uconn.edu cpus=16 start=Tue Oct 20 21:20:35 EDT 2026
+simulated N=20000; tiles b=250, nB=80; e_max=5.625e-04
+per-tile choices in 170s
+fixed                bytes=0.0333 of dense | mix={8: 0, 16: 0, 32: 0, 64: 3160} | rank(mean/max)=4.2/10 | budget met=False PD=True dloglik=-26.146432162087876 skill={'rmse': 0.2303917964168956, 'crps': 0.13018128337045215, 'cover90': 0.8933333333333333} (23s)
+rank_only            bytes=0.0472 of dense | mix={8: 0, 16: 0, 32: 0, 64: 3160} | rank(mean/max)=5.9/24 | budget met=True PD=True dloglik=-0.07708365968574071 skill={'rmse': 0.22934200442861286, 'crps': 0.1296469658689409, 'cover90': 0.9} (20s)
+rank_then_precision  bytes=0.0236 of dense | mix={8: 0, 16: 0, 32: 3160, 64: 0} | rank(mean/max)=5.9/24 | budget met=True PD=True dloglik=-0.07641860153671587 skill={'rmse': 0.22934227214194902, 'crps': 0.12964712330836542, 'cover90': 0.9} (21s)
+joint                bytes=0.0236 of dense | mix={8: 0, 16: 3, 32: 3157, 64: 0} | rank(mean/max)=5.9/24 | budget met=True PD=True dloglik=-0.06407549400319112 skill={'rmse': 0.22933958348258585, 'crps': 0.12964605920609423, 'cover90': 0.9} (23s)
+joint / rank-only bytes = 0.5 | rank-then-precision / rank-only = 0.5
+saved ../results/preliminary/joint/joint_rank_precision_n20000.json
+end=Tue Oct 20 21:25:44 EDT 2026

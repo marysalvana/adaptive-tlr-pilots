@@ -1,0 +1,10 @@
+simulated N=20000 (+300 held out) in 72.4s; tiles b=250, nB=80
+dense: loglik(theta_true)=1123.750, skill={'rmse': 0.22934100317151063, 'crps': 0.1296453277863204, 'cover90': 0.9}
+fixed    0.1     mem=0.017 rank(mean/max)=1.0/2 ||dS||_F/m=6.35e+03 PD=False dloglik=None skill=None (73s)
+fixed    0.01    mem=0.020 rank(mean/max)=1.9/3 ||dS||_F/m=835 PD=False dloglik=None skill=None (69s)
+fixed    0.001   mem=0.025 rank(mean/max)=3.1/6 ||dS||_F/m=75.2 PD=False dloglik=None skill=None (64s)
+fixed    0.0001  mem=0.029 rank(mean/max)=4.2/10 ||dS||_F/m=9.1 PD=True dloglik=-26.146432162702695 skill={'rmse': 0.230391796416857, 'crps': 0.1301812833704238, 'cover90': 0.8933333333333333} (186s)
+adaptive 0.5     mem=0.038 rank(mean/max)=6.4/27 ||dS||_F/m=0.284 PD=True dloglik=-0.2554918376081332 skill={'rmse': 0.2293411830186824, 'crps': 0.12964502100229808, 'cover90': 0.9} (165s)
+adaptive 0.9     mem=0.036 rank(mean/max)=5.9/24 ||dS||_F/m=0.508 PD=True dloglik=-0.07708365958023933 skill={'rmse': 0.22934200442861394, 'crps': 0.12964696586894442, 'cover90': 0.9} (242s)
+adaptive 0.99    mem=0.035 rank(mean/max)=5.8/23 ||dS||_F/m=0.559 PD=True dloglik=0.0964923732499301 skill={'rmse': 0.2293568503615952, 'crps': 0.1296539966922206, 'cover90': 0.9} (189s)
+MLE dense          theta_hat=[1.3603, 0.3364, 0.0361] evals=89 fail=0 skill={'rmse': 0.22935701649324305, 'crps': 0.12967035465196336, 'cover90': 0.8933333333333333} (3704s)

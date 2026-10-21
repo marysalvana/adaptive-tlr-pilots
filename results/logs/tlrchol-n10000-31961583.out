@@ -1,0 +1,13 @@
+node=cn632.storrs.hpc.uconn.edu cpus=16 start=Tue Oct 20 21:20:35 EDT 2026
+simulated N=10000 (+300 held out) in 4.8s; tiles b=250, nB=40
+dense: loglik(theta_true)=268.451 skill={'rmse': 0.20573758516679136, 'crps': 0.11587678212083655, 'cover90': 0.9366666666666666} (14s)
+fixed    0.01    completed=False sigma_mem=0.034 factor_mem=None rank(mean/max)=None/None dloglik=None skill=None (8s)
+fixed    0.001   completed=False sigma_mem=0.040 factor_mem=None rank(mean/max)=None/None dloglik=None skill=None (7s)
+fixed    0.0001  completed=True sigma_mem=0.045 factor_mem=0.11288871112888711 rank(mean/max)=8.064102564102564/18 dloglik=-2.5938077661176067 skill={'rmse': 0.2056497457720613, 'crps': 0.11586541067164097, 'cover90': 0.9366666666666666} (10s)
+fixed    1e-05   completed=True sigma_mem=0.054 factor_mem=0.13154684531546845 rank(mean/max)=10.456410256410257/24 dloglik=-0.4174184169896762 skill={'rmse': 0.20572301365982765, 'crps': 0.11587058017647815, 'cover90': 0.9366666666666666} (19s)
+adaptive 0.9     completed=True sigma_mem=0.053 factor_mem=0.0933906609339066 rank(mean/max)=5.564102564102564/19 dloglik=0.2631373855183483 skill={'rmse': 0.20575511206164057, 'crps': 0.11589404282903137, 'cover90': 0.9366666666666666} (31s)
+MLE dense          theta_hat=[1.394, 0.3239, 0.036] evals=80 fail=0 factor_mem=None skill={'rmse': 0.2055790009634406, 'crps': 0.11580802866727803, 'cover90': 0.9366666666666666} (267s)
+MLE fixed:1e-4     theta_hat=[1.3878, 0.3326, 0.0362] evals=82 fail=1 factor_mem=0.11370862913708629 skill={'rmse': 0.20604632961972463, 'crps': 0.11611613169610575, 'cover90': 0.9366666666666666} (1136s)
+MLE adaptive:0.9   theta_hat=[1.3932, 0.3223, 0.0359] evals=78 fail=0 factor_mem=0.09469053094690531 skill={'rmse': 0.20550927066886682, 'crps': 0.11575751795810911, 'cover90': 0.9366666666666666} (1493s)
+saved ../results/preliminary/tlr_cholesky/tlr_cholesky_n10000.json
+end=Tue Oct 20 22:10:57 EDT 2026

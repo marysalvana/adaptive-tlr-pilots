@@ -1,0 +1,9 @@
+node=cn634.storrs.hpc.uconn.edu cpus=16 start=Tue Oct 20 21:20:35 EDT 2026
+simulated N=20000 (+300 held out) in 14.7s; tiles b=250, nB=80
+dense: loglik(theta_true)=23219.260, skill={'rmse': 0.0745569436363509, 'crps': 0.04212358207722364, 'cover90': 0.8966666666666666}
+fixed    0.001   mem=0.025 rank(mean/max)=3.1/6 ||dS||_F/m=752 PD=False dloglik=None skill=None (36s)
+fixed    0.0001  mem=0.029 rank(mean/max)=4.2/10 ||dS||_F/m=91 PD=False dloglik=None skill=None (42s)
+fixed    1e-05   mem=0.035 rank(mean/max)=5.6/17 ||dS||_F/m=10.1 PD=True dloglik=-3.8639682334905956 skill={'rmse': 0.0746984037990114, 'crps': 0.04218978618163722, 'cover90': 0.8933333333333333} (99s)
+fixed    1e-06   mem=0.043 rank(mean/max)=7.7/30 ||dS||_F/m=1.09 PD=True dloglik=-0.3819748038004036 skill={'rmse': 0.07453784027834567, 'crps': 0.042112227239216767, 'cover90': 0.8966666666666666} (98s)
+adaptive 0.9     mem=0.044 rank(mean/max)=8.0/39 ||dS||_F/m=0.54 PD=True dloglik=-0.3767703567791614 skill={'rmse': 0.07455477326458479, 'crps': 0.04212274073992738, 'cover90': 0.8966666666666666} (198s)
+MLE dense          theta_hat=[1.0366, 0.3058, 0.0047] evals=164 fail=0 skill={'rmse': 0.07455771588259427, 'crps': 0.04213031696018683, 'cover90': 0.8933333333333333} (3362s)

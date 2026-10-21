@@ -1,0 +1,54 @@
+node=gpu52.storrs.hpc.uconn.edu gpu=NVIDIA A30, 24576 MiB
+NVIDIA A30, 24576 MiB start=Tue Oct 20 22:14:39 EDT 2026
+device cuda NVIDIA A30
+simulated N=10000 (+300 held out); tiles b=250, nB=40
+loglik(theta_true): dense 268.451 in 0.17s; adaptive 0.9 268.199 in 1.02s (stored 0.053 of dense)
+  dense    it=250 acc=0.14 scale=0.059 theta=[0.807, 0.273, 0.061] 0.07s/it (18s)
+  dense    it=500 acc=0.15 scale=0.042 theta=[0.923, 0.276, 0.054] 0.07s/it (37s)
+  dense    it=750 acc=0.19 scale=0.042 theta=[0.98, 0.29, 0.051] 0.07s/it (55s)
+  dense    it=1000 acc=0.20 scale=0.042 theta=[1.147, 0.328, 0.044] 0.07s/it (74s)
+  dense    it=1250 acc=0.19 scale=0.042 theta=[1.159, 0.295, 0.044] 0.07s/it (92s)
+  dense    it=1500 acc=0.20 scale=0.042 theta=[1.022, 0.293, 0.05] 0.07s/it (111s)
+  dense    it=1750 acc=0.20 scale=0.042 theta=[1.047, 0.294, 0.046] 0.07s/it (129s)
+  dense    it=2000 acc=0.20 scale=0.042 theta=[0.905, 0.287, 0.055] 0.07s/it (148s)
+  dense    it=2250 acc=0.21 scale=0.042 theta=[0.975, 0.286, 0.051] 0.07s/it (167s)
+  dense    it=2500 acc=0.20 scale=0.042 theta=[1.358, 0.323, 0.036] 0.07s/it (185s)
+  dense    it=2750 acc=0.21 scale=0.042 theta=[1.9, 0.346, 0.026] 0.07s/it (204s)
+  dense    it=3000 acc=0.21 scale=0.042 theta=[1.971, 0.363, 0.025] 0.07s/it (223s)
+dense: mean=[1.2072, 0.3048, 0.0445] sd=[0.356, 0.032, 0.0102] acc=0.21 failures=0 skill={'rmse': 0.2056340831131582, 'crps': 0.11612199539724723, 'cover90': 0.9466666666666667} stored=None (222s, 0.07s/it)
+  adaptive it=250 acc=0.14 scale=0.059 theta=[0.807, 0.273, 0.061] 0.93s/it (233s)
+  adaptive it=500 acc=0.15 scale=0.042 theta=[0.923, 0.276, 0.054] 0.93s/it (467s)
+  adaptive it=750 acc=0.19 scale=0.042 theta=[0.98, 0.29, 0.051] 0.93s/it (700s)
+  adaptive it=1000 acc=0.21 scale=0.042 theta=[1.441, 0.336, 0.035] 0.93s/it (933s)
+  adaptive it=1250 acc=0.20 scale=0.042 theta=[1.489, 0.33, 0.034] 0.93s/it (1166s)
+  adaptive it=1500 acc=0.21 scale=0.042 theta=[1.667, 0.357, 0.031] 0.93s/it (1399s)
+  adaptive it=1750 acc=0.21 scale=0.042 theta=[1.792, 0.355, 0.027] 0.93s/it (1632s)
+  adaptive it=2000 acc=0.21 scale=0.042 theta=[1.549, 0.347, 0.032] 0.93s/it (1864s)
+  adaptive it=2250 acc=0.22 scale=0.042 theta=[1.341, 0.319, 0.037] 0.93s/it (2097s)
+  adaptive it=2500 acc=0.21 scale=0.042 theta=[1.795, 0.351, 0.028] 0.93s/it (2330s)
+  adaptive it=2750 acc=0.21 scale=0.042 theta=[2.116, 0.358, 0.024] 0.93s/it (2563s)
+  adaptive it=3000 acc=0.21 scale=0.042 theta=[2.148, 0.368, 0.023] 0.93s/it (2795s)
+adaptive_0.9: mean=[1.5781, 0.3358, 0.034] sd=[0.3852, 0.0328, 0.0094] acc=0.21 failures=0 skill={'rmse': 0.2056185074858612, 'crps': 0.11610278251310902, 'cover90': 0.9433333333333334} stored=0.053775 (2795s, 0.93s/it)
+  fixed    it=250 acc=0.14 scale=0.059 theta=[0.846, 0.277, 0.059] 0.93s/it (233s)
+  fixed    it=500 acc=0.15 scale=0.041 theta=[0.958, 0.274, 0.052] 0.93s/it (467s)
+  fixed    it=750 acc=0.19 scale=0.041 theta=[0.802, 0.268, 0.063] 0.93s/it (700s)
+  fixed    it=1000 acc=0.20 scale=0.041 theta=[0.931, 0.294, 0.055] 0.93s/it (933s)
+  fixed    it=1250 acc=0.20 scale=0.041 theta=[0.838, 0.268, 0.061] 0.93s/it (1167s)
+  fixed    it=1500 acc=0.19 scale=0.041 theta=[0.678, 0.261, 0.075] 0.93s/it (1400s)
+  fixed    it=1750 acc=0.20 scale=0.041 theta=[0.72, 0.261, 0.067] 0.93s/it (1634s)
+  fixed    it=2000 acc=0.19 scale=0.041 theta=[0.669, 0.255, 0.076] 0.93s/it (1867s)
+  fixed    it=2250 acc=0.20 scale=0.041 theta=[0.742, 0.268, 0.068] 0.93s/it (2101s)
+  fixed    it=2500 acc=0.20 scale=0.041 theta=[1.033, 0.301, 0.048] 0.93s/it (2334s)
+  fixed    it=2750 acc=0.20 scale=0.041 theta=[1.144, 0.298, 0.044] 0.93s/it (2567s)
+  fixed    it=3000 acc=0.20 scale=0.041 theta=[0.989, 0.278, 0.051] 0.93s/it (2800s)
+fixed_0.0001: mean=[0.8683, 0.2725, 0.0597] sd=[0.1571, 0.0183, 0.0102] acc=0.20 failures=0 skill={'rmse': 0.20571299602212315, 'crps': 0.11604762193545178, 'cover90': 0.94} stored=0.04599 (2800s, 0.93s/it)
+Traceback (most recent call last):
+  File "/home/mls23007/cdse/codes/19_tlr_mcmc_gpu.py", line 276, in <module>
+    np.save(os.path.join(a.out, f"mcmc_n{a.n}_{name}_logcov.npy"), np.cov(chain[a.burn:].T))
+^^^^^^
+  File "/home/mls23007/cdse/codes/19_tlr_mcmc_gpu.py", line 247, in main
+    t0 = time.time(); ll0 = lik(theta_true, "dense", None); t_dense = time.time() - t0
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mls23007/cdse/codes/19_tlr_mcmc_gpu.py", line 169, in run_chain
+    
+AssertionError: initial state: factorization failed

@@ -1,10 +1,3 @@
-# Adaptive tile low-rank (TLR) Gaussian process inference: pilot experiments
-
-Small, reproducible experiments on choosing the rank of every covariance tile from a
-condition-dependent error budget rather than a fixed tolerance, with a Vecchia baseline, a
-multi-GPU tile Cholesky, standard errors, and a Metropolis-Hastings run with the adaptive-TLR
-likelihood.  Every script fixes its random seed and writes a JSON file with its settings and
-outputs into `results/`; the logs of the reported runs are in `results/logs/`.
 
 ## 1. Rank rules: fixed tolerance vs. the adaptive budget (`codes/11_tlr_rank_rules.py`)
 
@@ -88,6 +81,102 @@ form `solve_triangular(L_kk^T, M, left=False)` gave wrong factors on CUDA in PyT
 * Timing caveat for experiment 1: Sigma^TLR is assembled densely and factorized exactly, so
   the wall times of the rank rules (ranks re-chosen at every evaluation, SVD of every tile)
   are not comparable with a TLR Cholesky and should not be read as the method's cost.
-* Metropolis-Hastings pilot, N = 5,000 (`results/logs/tlr_mcmc_n5000.log`): in progress at the time of
-  writing (exact chain first, adaptive-TLR chain second).
-* N = 20,000 rank-rule run (`results/logs/tlr_n20000.log`): in progress at the time of writing.
+* Metropolis-Hastings pilot: see Section 7 (GPU chains with effective sample sizes); the CPU chain of
+  `codes/16_tlr_mcmc_pilot.py` (`results/logs/tlr_mcmc_n5000.log`) mixes too slowly to be compared.
+* N = 20,000 rank-rule run (`results/logs/tlr_n20000.log`): dense MLE (1.3603, 0.3364, 0.0361) in 89 evaluations;
+  the adaptive MLE was still running when this file was written.
+
+## Results added on 2026-10-21
+
+### 4. TLR Cholesky with recompression (`codes/17_tlr_cholesky_pilot.py`)
+
+The rank rules inside an actual tile low-rank factorization: off-diagonal tiles are stored as low-rank
+pairs, the factorization proceeds tile by tile (dense POTRF on diagonal tiles, triangular solves on the
+low-rank tiles, Schur-complement updates recompressed under the same rule), the log-likelihood comes from
+the factor, and predictions use TLR triangular solves. Nothing is assembled densely. A fixed tolerance can
+now fail in the way the software fails: an indefinite Schur complement stops the factorization.
+
+    sbatch --job-name=tlrchol-n10000 storrs_cpu.sbatch "17_tlr_cholesky_pilot.py --n 10000 --out ../results/tlr_cholesky"
+
+Outputs: `tlr_cholesky/tlr_cholesky_n{N}.json`, `results/logs/tlrchol-n{N}-*.out`. Memory is reported as stored
+values of the factor relative to a dense factor (N(N+1)/2 values).
+
+* N = 10,000, b = 250, true parameters: eps = 1e-2 and 1e-3 fail to factorize; eps = 1e-4 completes at
+  11.3% of the dense factor, 2.6 log-likelihood units off; eps = 1e-5 at 13.2%, 0.42 off; adaptive
+  tau = 0.9 at 9.3% (mean rank 5.6), 0.26 off. Maximum likelihood with the TLR likelihood (ranks
+  re-chosen at every evaluation): dense (1.394, 0.3239, 0.036); eps = 1e-4 (1.3878, 0.3326, 0.0362) with one
+  failed factorization during the search and the factor at 11.4%; adaptive (1.3932, 0.3223, 0.0359), no
+  failures, factor at 9.5%, within 0.03 dense standard errors of the dense estimates (dense SEs 0.61, 0.051,
+  0.016 from `pilot_standard_errors_n10000.json`); identical RMSE/CRPS/coverage (0.2055 / 0.1158 / 0.937).
+* N = 20,000, true parameters: eps = 1e-4 completes at 8.0%, 10.9 units off; eps = 1e-5 at 9.6%, 0.33 off;
+  adaptive at 6.0% (mean rank 4.4), 0.11 off; dense MLE (1.3603, 0.3364, 0.0361); the eps = 1e-4 and adaptive
+  fits were still running when this file was written.
+
+### 5. Small nugget and the Vecchia baseline priced (`codes/11_tlr_rank_rules.py`, `codes/12_vecchia_baseline.R`)
+
+Same experiment as Section 1 with eta = 0.005 (`small_nugget/`, N = 20,000, true (1, 0.3, 0.005)): fixed
+eps = 1e-3 and 1e-4 give an indefinite Sigma^TLR; eps = 1e-5 is definite at 3.5% but 3.9 units off;
+adaptive tau = 0.9 is definite at 4.4% (mean rank 8.0), 0.38 off. Dense MLE (1.0366, 0.3058, 0.0047) in
+164 evaluations; the eps = 1e-4, 1e-5, and adaptive fits were still running when this file was written.
+
+Vecchia (GpGp, `12_vecchia_baseline.R`, data regenerated from the seed), stored values N(m+1):
+
+| setting | m | theta_hat | fit time | RMSE | CRPS | cover90 | stored values |
+|---|---|---|---|---|---|---|---|
+| standard, N = 10,000 (dense MLE 1.394, 0.324, 0.036) | 30 | 1.398, 0.324, 0.036 | 3 s | 0.2055 | 0.1160 | 0.937 | 310,000 |
+| standard, N = 10,000 | 60 | 1.540, 0.335, 0.033 | 6 s | 0.2064 | 0.1164 | 0.943 | 610,000 |
+| standard, N = 20,000 (dense MLE 1.360, 0.336, 0.036) | 30 | 1.540, 0.364, 0.032 | 4 s | 0.2319 | 0.1311 | 0.907 | 620,000 |
+| standard, N = 20,000 | 60 | 0.862, 0.288, 0.057 | 17 s | 0.2293 | 0.1298 | 0.897 | 1,220,000 |
+| small nugget, N = 20,000 (dense MLE 1.037, 0.306, 0.0047) | 30 | 1.069, 0.307, 0.0046 | 5 s | 0.0750 | 0.0425 | 0.893 | 620,000 |
+| small nugget, N = 20,000 | 60 | 1.066, 0.309, 0.0046 | 11 s | 0.0750 | 0.0424 | 0.897 | 1,220,000 |
+
+Vecchia is fast and predicts well everywhere; its parameter estimates move with the neighbor count
+(sigma2 1.54 and 0.86 at N = 20,000 against the dense 1.36), and nothing short of a dense fit says which
+neighbor count to trust. The 60-neighbor value at N = 10,000 may be a local optimum of GpGp's optimizer.
+
+### 6. One budget on rank and storage precision (`codes/18_joint_rank_precision_pilot.py`, Objective 3)
+
+For every tile, the cheapest (rank, precision) pair, precision in FP8 E4M3 / FP16 / FP32 / FP64 (rounding
+simulated in NumPy after per-factor scaling), whose stored-tile error meets the adaptive budget e_max, against
+rank-only compression in FP64 at the same budget and a fixed eps = 1e-4 in FP64. Sigma^TLR is assembled
+densely from the rounded factors to check positive definiteness and the log-likelihood.
+
+| N | rule | off-diagonal bytes / dense FP64 | precision mix (tiles) | budget met | PD | log-lik error |
+|---|---|---|---|---|---|---|
+| 10,000 | fixed 1e-4, FP64 | 4.5% | all FP64 | no | yes | -0.89 |
+| 10,000 | rank only, FP64 | 5.7% | all FP64 | yes | yes | -0.25 |
+| 10,000 | rank then precision | 2.8% | 779 FP32, 1 FP16 | yes | yes | -0.25 |
+| 10,000 | joint | 2.8% | 777 FP32, 3 FP16 | yes | yes | -0.26 |
+| 20,000 | rank only, FP64 | 4.7% | all FP64 | yes | yes | -0.06 |
+| 20,000 | joint | 2.4% | 3,157 FP32, 3 FP16 | yes | yes | -0.06 |
+
+The joint rule halves the bytes of rank-only compression at both sizes with the budget met and the matrix
+definite; at this budget choosing rank first and then the lowest precision that fits gives the same bytes,
+and no tile qualifies for FP8. Outputs: `joint/joint_rank_precision_n{N}.json`.
+
+### 7. Metropolis-Hastings on a GPU (`codes/19_tlr_mcmc_gpu.py`, Objective 2)
+
+Random-walk Metropolis-Hastings for (sigma2, range, eta) on the N = 5,000 field of Section 1's design
+(same seed as `16_tlr_mcmc_pilot.py`), written after the mixed-precision-BHM simulation code: PyTorch on
+one GPU, the tile compression batched (`--svd rand`: randomized range finder with power iterations and
+the tile error verified in FP64, same ranks and log-likelihood as a full SVD), a failed factorization
+rejects the proposal, checkpoints every 100 iterations, effective sample sizes by the initial positive
+sequence estimator. Short isotropic-proposal chains (3,000 iterations, `mcmc_gpu_v4/`) have effective
+sample sizes below 10 because the posterior is a ridge (correlation 0.86 between log sigma2 and log range),
+so the reported comparison uses the proposal shaped by the exact chain's posterior covariance
+(`prop_logcov_n5000.npy`, scale 2.38/sqrt(3) tuned in burn-in) and 20,000 iterations with 2,000 burn-in,
+one chain per GPU job (`mcmc_long/{dense,adaptive_0.9,fixed_1e-4}/`, `results/logs/mcmc-long-*.out`):
+
+| chain | posterior mean (sigma2, range, eta) | posterior SD | ESS | mean diff. in exact SD | SD ratio | failed factorizations |
+|---|---|---|---|---|---|---|
+| exact | 1.373, 0.337, 0.0444 | 0.754, 0.058, 0.018 | 600, 650, 601 | - | - | 0 |
+| adaptive TLR, tau = 0.9 | 1.351, 0.336, 0.0444 | 0.643, 0.055, 0.018 | 642, 709, 641 | 0.03, 0.03, 0.00 | 0.85, 0.94, 0.99 | 0 |
+| fixed eps = 1e-4 | 1.142, 0.322, 0.0469 | 0.294, 0.030, 0.012 | 989, 1281, 992 | 0.31, 0.26, 0.14 | 0.39, 0.51, 0.68 | 47 |
+
+Monte Carlo standard errors of the posterior means are 0.03, 0.002, 0.0007 (exact chain). The adaptive-TLR
+posterior matches the exact one within Monte Carlo error; the fixed tolerance shifts the posterior means by
+0.1 to 0.3 SD, shrinks the posterior to 0.4 to 0.7 of its width, and fails 47 times in 20,000 proposals. A
+fixed eps = 1e-3 cannot start a chain at the dispersed starting value (indefinite). Held-out RMSE, CRPS, and
+coverage at the posterior means are the same for all three chains (0.234 / 0.132 / 0.92). The adaptive
+chain runs at 0.24 s per iteration on an A30 or A100 (exact chain 0.02 s); the CPU version of the same
+chain ran at 11 to 14 s per iteration.
