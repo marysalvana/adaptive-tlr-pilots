@@ -15,3 +15,9 @@ Check:      python3 29_check_reproduction.py ../results/screening_stress_rerun
 Expected:   quantities at fixed parameters (log-likelihoods at the truth, Vecchia errors, storage) agree to rounding with
             the same BLAS; optimizer results (MLEs, fit gaps) may move by a few hundredths with another BLAS or thread
             count. A different BLAS (OpenBLAS, MKL) changes the simulated field only at rounding level.
+Smoke:      N=1500 FIELDS_ONLY="nu15_r03_e005 nu25_r3_e005" ./run_screening_stress.sh <empty dir> 2   (about 3 minutes;
+            checks that every stage runs end to end; its numbers are for N = 1,500, not the committed ones)
+Verified 2026-10-21: the smoke test ran clean from the committed code into an empty folder, and the panel (c) stages for
+            the pilot field at N = 10,000 (24 sim, 26, 31, 32, 32 matched, 33) rerun into a fresh folder reproduced every
+            committed number exactly (field, exact log-likelihood, TLR storage and KL 0.0779, Vecchia KL m = 10..466,
+            grouped Vecchia KL 28.38 / 7.61), checked by 29_check_reproduction.py.

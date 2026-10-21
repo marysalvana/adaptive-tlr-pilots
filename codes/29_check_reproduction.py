@@ -41,6 +41,9 @@ def get(d, tag):
     f = os.path.join(d, tag, "kl_vecchia_matched.json")
     if os.path.exists(f):
         for x in json.load(open(f))["summary"]: r[f"KL Vecchia m={x['m']} (matched run)"] = x["mean"]
+    f = os.path.join(d, tag, "kl_vecchia_grouped_mc.json")
+    if os.path.exists(f):
+        for x in json.load(open(f))["summary"]: r[f"KL grouped Vecchia m={x['m']} (Monte Carlo)"] = x["kl_grouped"]
     return r
 
 

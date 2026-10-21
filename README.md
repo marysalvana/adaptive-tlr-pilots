@@ -23,8 +23,8 @@ definiteness (Cholesky success), log-likelihood error at the true parameters,
 maximum-likelihood estimates of (sigma2, range, eta) with ranks re-chosen at every
 parameter value, and RMSE / CRPS / 90% coverage at 300 held-out sites.
 
-    cd codes && python3 11_tlr_rank_rules.py --n 10000 --out ../results
-    cd codes && python3 11_tlr_rank_rules.py --n 20000 --mle "dense,adaptive:0.9" --out ../results
+    cd codes && python3 11_tlr_rank_rules.py --n 10000 --out ../results/preliminary
+    cd codes && python3 11_tlr_rank_rules.py --n 20000 --mle "dense,adaptive:0.9" --out ../results/preliminary
 
 Outputs: `tlr_rank_rules_n{N}.json`, `sim_n{N}_obs.csv`, `sim_n{N}_holdout.csv`, `results/logs/`.
 
@@ -33,7 +33,7 @@ Outputs: `tlr_rank_rules_n{N}.json`, `sim_n{N}_obs.csv`, `sim_n{N}_holdout.csv`,
 Fits the same simulated data by Vecchia's approximation with m = 30 nearest neighbors
 (GpGp `matern15_isotropic`, max-min ordering) and predicts the same held-out sites.
 
-    cd codes && Rscript 12_vecchia_baseline.R 10000 30 ../results
+    cd codes && Rscript 12_vecchia_baseline.R 10000 30 ../results/preliminary
 
 Output: `vecchia_n{N}_m{m}.json`.
 
@@ -129,9 +129,9 @@ values of the factor relative to a dense factor (N(N+1)/2 values).
   entries), so the field is simulated from a tau = 0.02 TLR factor (`--sim tlr --dense 0`, 4.3% of a dense factor) and
   only completion and storage are reported: eps = 1e-4 fails to factorize; adaptive completes at 2.9% of a dense factor
   (mean rank 2.9), predictions RMSE 0.2204 (`tlrchol-n100000-31998652.out`).
-* Figure: `codes/20_pilot_results_figure.py` draws factor storage, log-likelihood error, and the fitted nugget of the
-  dense, adaptive-TLR, and Vecchia (30 and 60 neighbors) fits against N, with the failed tolerances marked
-  (`results/pilot_results.pdf`).
+* Figure: `codes/20_pilot_results_figure.py` draws factor storage and the log-likelihood error at the true parameters
+  against N, with the failed tolerances marked, and in panel (c) the KL divergence of adaptive TLR and of Vecchia from the
+  exact model on the nine fields of Section 8 (`pilot_results.pdf`).
 
 ### 5. Small nugget and the Vecchia baseline priced (`codes/11_tlr_rank_rules.py`, `codes/12_vecchia_baseline.R`)
 
@@ -221,3 +221,83 @@ fixed eps = 1e-3 cannot start a chain at the dispersed starting value (indefinit
 coverage at the posterior means are the same for all three chains (0.234 / 0.132 / 0.92). The adaptive
 chain runs at 0.24 s per iteration on an A30 or A100 (exact chain 0.02 s); the CPU version of the same
 chain ran at 11 to 14 s per iteration.
+
+### 8. Vecchia head-to-head on nine fields: KL divergence and fits (codes 24-32, panel (c) of the results figure)
+
+Where Vecchia's screening assumption weakens, does the adaptive rule keep the exact model's accuracy? Nine Matern fields at
+N = 10,000 on the unit square (smoothness nu = 3/2 or 5/2, range 0.3, 1 or 3, relative nugget 0.05, 0.5 or 1; the first is
+the field of Section 4, same seed and values), each with a dense exact reference. Folders `screening_stress/<tag>/`,
+tag = nu{15,25}_r{03,1,3}_e{005,05,1}.
+
+Accuracy of the approximation, the measure of Guinness (2018) and Katzfuss and Guinness (2021): the KL divergence
+KL(N(0, Sigma) || N(0, Sigma_tilde)) at the true parameters, exact at this N. Adaptive TLR (tau = 0.9, 17's tile Cholesky
+with recompression): `31_kl_tlr.py` -> `kl_tlr.json`. Response Vecchia (GpGp 0.5.1, max-min ordering, sparse inverse
+Cholesky from `vecchia_Linv`): `32_kl_vecchia.R` -> `kl_vecchia.json` (m = 10, 30, 60, 120) and `kl_vecchia_matched.json`
+(m = 250 and the m whose N(m+1) stored values equal the adaptive factor's). Both formulas were checked on exact cases:
+Vecchia with every point as a neighbor and TLR with tau = 1e-8 give KL = 0 to rounding.
+
+GpGp's `order_maxmin` is randomized, so the Vecchia likelihood and the Vecchia fits depend on the ordering drawn. Every
+Vecchia number here is the mean over orderings drawn with `set.seed(1..8)` (KL at m = 250 and the matched m: 2 orderings);
+the KL varies by under 1% across orderings, the fits much more (table below).
+
+| field (nu, range, nugget) | adaptive TLR: storage, max rank, KL | Vecchia KL m = 10 / 30 / 60 / 120 | Vecchia KL at m = 250 / at TLR storage (m) |
+|---|---|---|---|
+| 3/2, 0.3, 0.05 (`nu15_r03_e005`) | 9.3%, 19, 0.078 | 250.6 / 43.5 / 22.2 / 6.7 | 0.37 / 0.065 (466) |
+| 3/2, 1, 0.05 (`nu15_r1_e005`) | 8.1%, 9, 0.087 | 386.1 / 96.1 / 33.3 / 11.9 | 5.74 / 2.543 (405) |
+| 3/2, 3, 0.05 (`nu15_r3_e005`) | 7.2%, 5, 0.065 | 440.4 / 135.3 / 59.1 / 23.5 | 7.73 / 4.461 (358) |
+| 3/2, 0.3, 0.5 (`nu15_r03_e05`) | 8.0%, 11, 0.071 | 323.1 / 66.2 / 18.3 / 7.1 | 2.94 / 0.743 (399) |
+| 5/2, 0.3, 0.05 (`nu25_r03_e005`) | 9.0%, 13, 0.093 | 361.4 / 89.0 / 43.0 / 24.5 | 6.12 / 1.147 (449) |
+| 5/2, 1, 0.05 (`nu25_r1_e005`) | 7.7%, 6, 0.091 | 436.5 / 134.6 / 60.1 / 25.8 | 11.82 / 8.336 (385) |
+| 5/2, 3, 0.05 (`nu25_r3_e005`) | 6.7%, 4, 0.147 | 458.0 / 150.9 / 72.6 / 34.4 | 15.01 / 10.515 (336) |
+| 5/2, 1, 0.5 (`nu25_r1_e05`) | 7.1%, 4, 0.080 | 427.9 / 138.6 / 63.1 / 26.9 | 10.16 / 6.318 (356) |
+| 5/2, 1, 1 (`nu25_r1_e1`) | 6.9%, 4, 0.106 | 411.9 / 138.6 / 64.1 / 27.5 | 10.33 / 6.566 (345) |
+
+The adaptive KL divergence is 0.07 to 0.15 on every field. Vecchia's is 18 to 151 with 30 or 60 neighbors. At the storage
+of the adaptive factor (m = 336 to 466, where Vecchia's O(N m^3) cost exceeds a dense Cholesky's at this N) Vecchia matches
+the adaptive rule on the pilot field (0.065 vs 0.078) and is 10 to 90 times larger on the other eight, the gap growing with
+the range and the smoothness. Response Vecchia is the variant tested; latent or grouped variants handle nuggets differently
+and were not run.
+
+Also in each folder: `stress.json` (24: field, exact and adaptive-TLR log-likelihood at the truth, Vecchia scored at the
+truth), `vecchia.json` (25: Vecchia log-likelihood at the truth for m = 5..120, predictions, fits at m = 30, 60),
+`vecchia_matched.json` (26), `grid.csv`, `vecchia_grid.csv` (27/28: exact, TLR and Vecchia log-likelihoods on 33 parameter
+values around the exact MLE), `vecchia_fit_orderings.json` (30), `inference.json` (27: verified exact MLE, adaptive-TLR
+MLE, fits scored on the exact likelihood).
+
+Fits scored on the exact likelihood (`inference.json`, `27_inference_headtohead.py report`): the exact MLE is verified by
+Nelder-Mead restarted until it stops improving, from the best of the truth, the earlier fits and every Vecchia fit; the
+adaptive-TLR MLE and the Vecchia fits (fit_model, 8 orderings, `30_vecchia_fit_orderings.R`) are scored by the exact
+log-likelihood they lose. The adaptive-TLR MLE lost at most 0.36 units (under 0.1 on eight fields); the Vecchia fits lost
+up to 8.2 units on average over orderings and up to 20.7 for a single ordering, worst at long range and high smoothness.
+
+| field (nu, range, nugget) | verified exact MLE (sigma2, range, nugget) | adaptive-TLR fit: exact log-lik lost | Vecchia m = 30 fits: mean (min to max) over 8 orderings | Vecchia m = 60 fits | grouped Vecchia KL m = 30 / 60 |
+|---|---|---|---|---|---|
+| 3/2, 0.3, 0.05 | (1.711, 0.348, 0.0293) | 0.02 | 0.47 (0.05 to 1.00) | 0.07 (0.01 to 0.22) | 28.4 / 7.6 |
+| 3/2, 1, 0.05 | (1.626, 1.136, 0.0310) | 0.07 | 0.85 (0.34 to 1.63) | 0.55 (0.02 to 2.07) | 56.8 / 15.5 |
+| 3/2, 3, 0.05 | (1.713, 3.594, 0.0294) | 0.07 | 4.76 (2.56 to 10.03) | 2.18 (0.38 to 5.92) | 82.2 / 28.9 |
+| 3/2, 0.3, 0.5 | (1.211, 0.299, 0.4151) | 0.01 | 0.39 (0.03 to 0.76) | 0.26 (0.05 to 0.50) | 35.5 / 8.7 |
+| 5/2, 0.3, 0.05 | (1.529, 0.316, 0.0329) | 0.00 | 0.43 (0.08 to 1.32) | 0.34 (0.04 to 0.67) | 59.6 / 23.5 |
+| 5/2, 1, 0.05 | (1.669, 1.169, 0.0302) | 0.05 | 1.60 (0.03 to 9.97) | 1.34 (0.12 to 2.88) | 88.0 / 31.8 |
+| 5/2, 3, 0.05 | (1.141, 2.741, 0.0442) | 0.36 | 8.20 (4.23 to 20.68) | 3.60 (1.19 to 9.03) | 95.3 / 39.6 |
+| 5/2, 1, 0.5 | (0.947, 0.941, 0.5321) | 0.03 | 1.74 (0.09 to 7.23) | 4.49 (0.00 to 12.30) | 85.5 / 32.0 |
+| 5/2, 1, 1 | (0.938, 0.912, 1.0746) | 0.06 | 3.52 (0.23 to 8.38) | 3.25 (0.06 to 6.32) | 85.4 / 31.8 |
+
+Grouped Vecchia (`fit_model`'s default, `group = TRUE`), the variant the fits use, has no exposed inverse factor, so its KL
+divergence is estimated by Monte Carlo (`33_kl_vecchia_grouped_mc.R`: KL = E[log p - log q] over 40 draws from the exact
+model, 4 orderings, `kl_vecchia_grouped_mc.json`); on the same draws the ungrouped Monte Carlo estimate matches the exact
+ungrouped KL of 32 within 1-2% on every field. Grouping roughly halves the KL (8 to 95 with 30 or 60 neighbors) and panel (c) of the results figure plots the grouped values; the equal-storage point stays ungrouped (exact).
+
+Rerun everything (about 45 min per field on an 8-core laptop, 3 fields at a time; environment, seeds and versions in
+`codes/ENVIRONMENT_screening_stress.txt`):
+
+    cd codes && ./run_screening_stress.sh ../results/screening_stress_rerun 3
+    python3 29_check_reproduction.py ../results/screening_stress_rerun
+
+Smoke test (about 3 minutes; every stage end to end at N = 1,500 on two fields):
+
+    cd codes && N=1500 FIELDS_ONLY="nu15_r03_e005 nu25_r3_e005" ./run_screening_stress.sh /tmp/smoke 2
+
+Verified on 2026-10-21: the smoke test runs clean from the committed code, and rerunning the panel (c) of the results figure stages for the
+pilot field reproduced every committed number exactly. The checker compares every quoted number with the committed one: quantities at fixed parameters (fields, log-likelihoods
+and KL at the truth) should agree to rounding with the same BLAS; optimizer results (MLEs, fit losses) can move by a few
+hundredths with another BLAS or thread count.

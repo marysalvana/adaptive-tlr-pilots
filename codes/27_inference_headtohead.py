@@ -38,8 +38,14 @@ def ll_exact(S, y, th):
     return None if ll is None else float(ll)
 
 
-def ll_tlr(S, y, th, bounds, tau):
-    ll, _, info = tlr.tlr_loglik(S, y, np.asarray(th), bounds, "adaptive", tau)
+def ll_tlr(S, y, th, bounds, tau, trace=None):
+    """Adaptive-TLR log-likelihood; None if the factorization fails or, at an extreme trial point of the optimizer, a
+    tile SVD does not converge (counted in trace["numerical_errors"], so such points stay visible)."""
+    try:
+        ll, _, info = tlr.tlr_loglik(S, y, np.asarray(th), bounds, "adaptive", tau)
+    except (np.linalg.LinAlgError, ValueError, FloatingPointError):
+        if trace is not None: trace["numerical_errors"] = trace.get("numerical_errors", 0) + 1
+        return None, dict(completed=False)
     return (None if ll is None else float(ll)), info
 
 
@@ -90,11 +96,11 @@ def stage_fit(a, d):
     res["exact_mle"] = dict(theta_hat=th_e.tolist(), loglik=l_e, evals=tr["evals"], restarts=tr["restarts"], seconds=time.time() - t0)
     print(f"[{a.tag}] verified exact MLE {np.round(th_e, 4).tolist()} loglik={l_e:.3f} ({tr['evals']} evals)", flush=True)
     t0 = time.time(); tr = dict(evals=0, failures=0)
-    th_t, l_t = nm(lambda th: ll_tlr(S, y, th, bounds, tau)[0], x0, tr)
+    th_t, l_t = nm(lambda th: ll_tlr(S, y, th, bounds, tau, tr)[0], x0, tr)
     l_t_exact = ll_exact(S, y, th_t)
     _, info = ll_tlr(S, y, th_t, bounds, tau)
     res["tlr_mle"] = dict(theta_hat=th_t.tolist(), tlr_loglik=l_t, exact_loglik=l_t_exact, evals=tr["evals"], restarts=tr["restarts"],
-                          failures=tr["failures"], seconds=time.time() - t0,
+                          failures=tr["failures"], numerical_errors=tr.get("numerical_errors", 0), seconds=time.time() - t0,
                           factor_frac=info["stored_factor"] / (st["n"] * (st["n"] + 1) // 2) if info["completed"] else None)
     print(f"[{a.tag}] adaptive-TLR MLE {np.round(th_t, 4).tolist()} exact loglik there={l_t_exact:.3f} "
           f"failures={tr['failures']}", flush=True)

@@ -13,7 +13,8 @@
 #   27 fitorders  each of those fits scored on the exact likelihood
 #   31         KL divergence of the adaptive TLR approximation from the exact model at the true parameters
 #   32         KL divergence of Vecchia (m = 10, 30, 60, 120, 8 orderings; then m = 250 and the TLR-matched m, 2 orderings)
-# Panel (c) of the results figure plots the KL divergences (31, 32).
+#   33         KL divergence of grouped Vecchia (GpGp's fitting default) by Monte Carlo, 40 draws, 4 orderings
+# Panel (c) of the results figure plots the KL divergences (31, 32, 33).
 # then prints both report tables and redraws the results figure.  About 45 min per field on one 8-core laptop (3 fields at a time).
 #
 # Usage (from codes/):
@@ -21,11 +22,15 @@
 #     OUT_DIR   default ../results/screening_stress_rerun (the committed run is ../results/screening_stress)
 #     PARALLEL  fields run at once, default 3 (each needs about 4 GB for the dense N = 10,000 reference)
 #   python3 29_check_reproduction.py OUT_DIR      compare the rerun with the committed numbers
+# Smoke test (minutes, checks that every stage runs; numbers differ from the committed N = 10,000 run):
+#   N=1500 FIELDS_ONLY="nu15_r03_e005 nu25_r3_e005" ./run_screening_stress.sh /tmp/smoke 2
 # Environment of the committed run: see ENVIRONMENT_screening_stress.txt.
 set -euo pipefail
 cd "$(dirname "$0")"
 OUT=${1:-../results/screening_stress_rerun}
 PAR=${2:-3}
+N=${N:-10000}                              # field size; the committed run uses 10,000
+FIELDS_ONLY=${FIELDS_ONLY:-}               # optional space-separated subset of field tags
 mkdir -p "$OUT/logs"
 export OMP_NUM_THREADS=${OMP_NUM_THREADS:-3} OPENBLAS_NUM_THREADS=${OPENBLAS_NUM_THREADS:-3} VECLIB_MAXIMUM_THREADS=${VECLIB_MAXIMUM_THREADS:-3}
 
@@ -42,7 +47,7 @@ nu25_r1_e1 2.5 1.0 1.0"
 one() {
   local tag=$1 nu=$2 r=$3 e=$4 d="$OUT/$1" L="$OUT/logs/$1.log"
   {
-    python3 24_screening_stress.py sim --n 10000 --nu "$nu" --range "$r" --eta "$e" --tag "$tag" --out "$OUT"
+    python3 24_screening_stress.py sim --n "$N" --nu "$nu" --range "$r" --eta "$e" --tag "$tag" --out "$OUT"
     Rscript 25_vecchia_stress.R "$d"
     python3 24_screening_stress.py eval --tag "$tag" --out "$OUT"
     Rscript 26_vecchia_matched_storage.R "$d"
@@ -54,11 +59,13 @@ one() {
     python3 31_kl_tlr.py --tag "$tag" --out "$OUT"
     Rscript 32_kl_vecchia.R "$d" 8
     Rscript 32_kl_vecchia.R "$d" 2 matched
+    Rscript 33_kl_vecchia_grouped_mc.R "$d" 40 4
     echo "DONE $tag"
   } > "$L" 2>&1 || { echo "FAILED $tag (see $L)"; return 1; }
   echo "DONE $tag"
 }
-export -f one; export OUT
+export -f one; export OUT N
+if [ -n "$FIELDS_ONLY" ]; then FIELDS=$(echo "$FIELDS" | grep -wE "$(echo $FIELDS_ONLY | tr ' ' '|')"); fi
 echo "$FIELDS" | xargs -P "$PAR" -L 1 bash -c 'one "$@"' _
 python3 24_screening_stress.py report --out "$OUT" | tee "$OUT/report_likelihood_at_truth.md"
 python3 27_inference_headtohead.py report --out "$OUT" | tee "$OUT/report_inference.md"

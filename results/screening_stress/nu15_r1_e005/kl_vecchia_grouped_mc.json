@@ -1,0 +1,84 @@
+{
+  "runs": [
+    {
+      "m": 30,
+      "seed": 1,
+      "kl_ungrouped_mc": 97.67159124,
+      "se_ungrouped": 1.99387648,
+      "kl_grouped_mc": 56.60995678,
+      "se_grouped": 1.50151746
+    },
+    {
+      "m": 60,
+      "seed": 1,
+      "kl_ungrouped_mc": 33.5052402,
+      "se_ungrouped": 1.28735435,
+      "kl_grouped_mc": 15.34726188,
+      "se_grouped": 0.8117295
+    },
+    {
+      "m": 30,
+      "seed": 2,
+      "kl_ungrouped_mc": 97.74126636,
+      "se_ungrouped": 1.95084319,
+      "kl_grouped_mc": 55.33350745,
+      "se_grouped": 1.38481093
+    },
+    {
+      "m": 60,
+      "seed": 2,
+      "kl_ungrouped_mc": 33.9962729,
+      "se_ungrouped": 1.2707813,
+      "kl_grouped_mc": 15.60085816,
+      "se_grouped": 0.90747493
+    },
+    {
+      "m": 30,
+      "seed": 3,
+      "kl_ungrouped_mc": 100.31310709,
+      "se_ungrouped": 2.09940254,
+      "kl_grouped_mc": 58.24654935,
+      "se_grouped": 1.65509616
+    },
+    {
+      "m": 60,
+      "seed": 3,
+      "kl_ungrouped_mc": 32.48147011,
+      "se_ungrouped": 1.27654239,
+      "kl_grouped_mc": 15.61210782,
+      "se_grouped": 0.86379566
+    },
+    {
+      "m": 30,
+      "seed": 4,
+      "kl_ungrouped_mc": 95.29484706,
+      "se_ungrouped": 2.1709385,
+      "kl_grouped_mc": 56.96296413,
+      "se_grouped": 1.77761411
+    },
+    {
+      "m": 60,
+      "seed": 4,
+      "kl_ungrouped_mc": 32.14022386,
+      "se_ungrouped": 1.29867652,
+      "kl_grouped_mc": 15.48126695,
+      "se_grouped": 0.93784781
+    }
+  ],
+  "summary": [
+    {
+      "m": 30,
+      "kl_grouped": 56.78824443,
+      "kl_ungrouped_mc": 97.75520294,
+      "draws": 40,
+      "orderings": 4
+    },
+    {
+      "m": 60,
+      "kl_grouped": 15.5103737,
+      "kl_ungrouped_mc": 33.03080177,
+      "draws": 40,
+      "orderings": 4
+    }
+  ]
+}

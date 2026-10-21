@@ -92,9 +92,9 @@ a2.text(95000, 4.0, "100k: no dense\nreference", ha="right", va="center", fontsi
 
 # (c) head to head with Vecchia on all nine screening fields at N = 10,000 (codes 24, 26, 31, 32): KL divergence of each
 # approximation from the exact Gaussian model at the true parameters (Guinness 2018; Katzfuss and Guinness 2021).
-# Rows: fields (smoothness nu, range, relative nugget).  Blue: adaptive TLR.  Green: response Vecchia (GpGp, max-min
-# ordering) with 30 (filled square) and 60 (open square) neighbors, and with the neighbors that match the adaptive TLR
-# storage (diamond); each the mean over seeded orderings.
+# Rows: fields (smoothness nu, range, relative nugget).  Blue: adaptive TLR.  Green: grouped response Vecchia (GpGp's
+# fitting default, max-min ordering; Monte Carlo KL of 33) with 30 (filled square) and 60 (open square) neighbors, and
+# ungrouped Vecchia with the neighbors that match the adaptive TLR storage (diamond, exact KL of 32); means over orderings.
 SS = os.environ.get("SS_DIR", os.path.join(RES, "screening_stress"))
 fields = []
 for tag in sorted(os.listdir(SS)):
@@ -103,6 +103,9 @@ for tag in sorted(os.listdir(SS)):
     st = json.load(open(os.path.join(d, "stress.json")))["settings"]
     kt = json.load(open(os.path.join(d, "kl_tlr.json")))["kl"]
     kv = {x["m"]: x["mean"] for x in json.load(open(os.path.join(d, "kl_vecchia.json")))["summary"]}
+    gf = os.path.join(d, "kl_vecchia_grouped_mc.json")       # grouped Vecchia (GpGp's fitting default), Monte Carlo KL (33)
+    if os.path.exists(gf):
+        kv.update({x["m"]: x["kl_grouped"] for x in json.load(open(gf))["summary"]})
     km = None
     if os.path.exists(os.path.join(d, "kl_vecchia_matched.json")):
         mm = json.load(open(os.path.join(d, "vecchia_matched.json")))["m_match"]
@@ -119,12 +122,12 @@ for i, (key, kt, kv, km) in enumerate(fields):
     a3.plot([kt], [yv], marker="o", ms=4.5, color=BLUE, mec="white", mew=0.6, ls="none", zorder=4)
 a3.set_yticks(range(len(fields)))
 a3.set_yticklabels([("pilot  " if (nu, eta, rg) == (1.5, 0.05, 0.3) else "") + f"{NU[nu]}  {rg:g}  {eta:g}" for (nu, eta, rg), _, _, _ in fields][::-1], fontsize=5.6)
-a3.set_ylim(-3.6, len(fields) - 0.3)
+a3.set_ylim(-4.4, len(fields) - 0.3)
 a3.set_xscale("log"); a3.set_xlim(0.02, 400); a3.set_xticks([0.1, 1, 10, 100]); a3.set_xticklabels(["0.1", "1", "10", "100"], fontsize=6.5)
 a3.minorticks_off(); a3.grid(axis="x", color=RULE, lw=0.4, alpha=0.6); a3.grid(axis="y", visible=False)
 a3.set_xlabel("KL divergence (0 = exact)", labelpad=1); a3.set_ylabel("")
-a3.text(0.97, 0.03, "rows: smoothness $\\nu$, range, nugget\nblue: adaptive TLR\ngreen: Vecchia, $m=30$ (filled), $m=60$ (open),\nsame storage as TLR (diamond)",
+a3.text(0.97, 0.03, "rows: smoothness $\\nu$, range, nugget\nblue: adaptive TLR\ngreen: grouped Vecchia, $m=30$ (filled),\n$m=60$ (open); ungrouped Vecchia at\nthe same storage as TLR (diamond)",
         transform=a3.transAxes, fontsize=5.4, ha="right", va="bottom", color=INK, linespacing=1.15)
 for ext in ("pdf", "png"):
     fig.savefig(os.path.join(os.environ.get("FIG_OUT", os.path.join(ROOT, "results")), f"pilot_results.{ext}"), dpi=300, bbox_inches="tight", pad_inches=0.02)
-print("sizes", Ns, "-> results/pilot_results.pdf")
+print("sizes", Ns, "->", os.path.join(os.environ.get("FIG_OUT", os.path.join(ROOT, "results")), "pilot_results.pdf"))
