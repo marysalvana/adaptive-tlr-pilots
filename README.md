@@ -116,15 +116,21 @@ values of the factor relative to a dense factor (N(N+1)/2 values).
   failures, factor at 9.5%, within 0.03 dense standard errors of the dense estimates (dense SEs 0.61, 0.051,
   0.016 from `pilot_standard_errors_n10000.json`); identical RMSE/CRPS/coverage (0.2055 / 0.1158 / 0.937).
 * N = 20,000, true parameters: eps = 1e-4 completes at 8.0%, 10.9 units off; eps = 1e-5 at 9.6%, 0.33 off;
-  adaptive at 6.0% (mean rank 4.4), 0.11 off; dense MLE (1.3603, 0.3364, 0.0361); the eps = 1e-4 and adaptive
-  fits were still running when this file was written.
+  adaptive at 6.0% (mean rank 4.4), 0.11 off. Maximum likelihood: dense (1.3603, 0.3364, 0.0361); eps = 1e-4
+  (0.5884, 0.2479, 0.0836) with 4 failed factorizations in 210 evaluations and the factor at 7.9%; adaptive
+  (1.3583, 0.3367, 0.0361), no failures, factor at 6.1%, within 0.01 dense standard errors (SEs 0.87, 0.076,
+  0.023 from `pilot_standard_errors_n20000.json`); the same RMSE/CRPS/coverage for all three (0.229 / 0.130 / 0.89).
 
 ### 5. Small nugget and the Vecchia baseline priced (`codes/11_tlr_rank_rules.py`, `codes/12_vecchia_baseline.R`)
 
 Same experiment as Section 1 with eta = 0.005 (`small_nugget/`, N = 20,000, true (1, 0.3, 0.005)): fixed
 eps = 1e-3 and 1e-4 give an indefinite Sigma^TLR; eps = 1e-5 is definite at 3.5% but 3.9 units off;
-adaptive tau = 0.9 is definite at 4.4% (mean rank 8.0), 0.38 off. Dense MLE (1.0366, 0.3058, 0.0047) in
-164 evaluations; the eps = 1e-4, 1e-5, and adaptive fits were still running when this file was written.
+adaptive tau = 0.9 is definite at 4.4% (mean rank 8.0), 0.38 off. Maximum likelihood: dense (1.0366, 0.3058, 0.0047) in
+164 evaluations, RMSE 0.0746; eps = 1e-4 (1.5033, 0.1694, 0.0123) with 27 failed factorizations, RMSE 0.1395
+(wrong estimates and double the prediction error); eps = 1e-5 (1.1501, 0.3224, 0.0043), one failure, RMSE 0.0747;
+adaptive tau = 0.9 (1.3614, 0.3352, 0.0036), no failures, RMSE 0.0746. The dense and adaptive estimates lie on the
+same ridge of the likelihood: the identifiable ratio sigma2 / range^3 (Zhang 2004) is 36.2 for dense, 36.1 for
+adaptive, 34.3 for eps = 1e-5, and 309 for eps = 1e-4.
 
 Vecchia (GpGp, `12_vecchia_baseline.R`, data regenerated from the seed), stored values N(m+1):
 
@@ -138,7 +144,9 @@ Vecchia (GpGp, `12_vecchia_baseline.R`, data regenerated from the seed), stored 
 | small nugget, N = 20,000 | 60 | 1.066, 0.309, 0.0046 | 11 s | 0.0750 | 0.0424 | 0.897 | 1,220,000 |
 
 Vecchia is fast and predicts well everywhere; its parameter estimates move with the neighbor count
-(sigma2 1.54 and 0.86 at N = 20,000 against the dense 1.36), and nothing short of a dense fit says which
+(sigma2 1.54 and 0.86 at N = 20,000 against the dense 1.36, i.e. 0.2 to 0.9 dense standard errors with
+`pilot_standard_errors_n20000.json`: SEs 0.87, 0.076, 0.023 by finite differences at the dense MLE, whose
+gradient there is not quite zero, so these SEs are approximate), and nothing short of a dense fit says which
 neighbor count to trust. The 60-neighbor value at N = 10,000 may be a local optimum of GpGp's optimizer.
 
 ### 6. One budget on rank and storage precision (`codes/18_joint_rank_precision_pilot.py`, Objective 3)

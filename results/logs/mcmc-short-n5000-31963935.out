@@ -1,0 +1,19 @@
+node=cn457.storrs.hpc.uconn.edu cpus=4 start=Tue Oct 20 21:43:44 EDT 2026
+simulated N=5000 (+300 held out); tiles b=250, nB=20
+  dense    it=250 acc=0.16 scale=0.061 theta=[0.928, 0.317, 0.054] (448s)
+  dense    it=500 acc=0.20 scale=0.057 theta=[0.852, 0.274, 0.056] (949s)
+  dense    it=750 acc=0.22 scale=0.057 theta=[1.024, 0.315, 0.048] (1364s)
+  dense    it=1000 acc=0.22 scale=0.057 theta=[1.796, 0.406, 0.028] (1877s)
+  dense    it=1250 acc=0.22 scale=0.057 theta=[1.235, 0.321, 0.042] (2426s)
+  dense    it=1500 acc=0.21 scale=0.057 theta=[1.007, 0.324, 0.051] (2948s)
+dense: mean=[1.2875, 0.3327, 0.0428] sd=[0.4069, 0.0411, 0.0123] acc=0.21 failures=0 skill={'rmse': 0.23436903410781748, 'crps': 0.13193855726707918, 'cover90': 0.92} stored=None (2948s)
+  adaptive it=250 acc=0.16 scale=0.061 theta=[0.928, 0.317, 0.054] (3531s)
+  adaptive it=500 acc=0.19 scale=0.057 theta=[0.721, 0.258, 0.066] (6815s)
+  adaptive it=750 acc=0.22 scale=0.057 theta=[0.895, 0.303, 0.055] (8161s)
+  adaptive it=1000 acc=0.24 scale=0.057 theta=[1.741, 0.399, 0.029] (9250s)
+  adaptive it=1250 acc=0.22 scale=0.057 theta=[1.427, 0.327, 0.036] (10912s)
+  adaptive it=1500 acc=0.22 scale=0.057 theta=[1.385, 0.354, 0.036] (11661s)
+adaptive_tlr: mean=[1.2509, 0.3293, 0.0448] sd=[0.3964, 0.0447, 0.0147] acc=0.22 failures=0 skill={'rmse': 0.23437595688870344, 'crps': 0.13195826213739742, 'cover90': 0.9233333333333333} stored=0.08256 (11661s)
+posterior mean difference in dense SD units: [0.09, 0.083, 0.162]
+saved ../results/preliminary/mcmc_short/tlr_mcmc_pilot_n5000.json
+end=Wed Oct 21 01:48:43 EDT 2026

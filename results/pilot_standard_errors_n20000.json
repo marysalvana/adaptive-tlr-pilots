@@ -1,0 +1,26 @@
+{
+ "N": 20000,
+ "theta_hat": [
+  1.3603,
+  0.3364,
+  0.0361
+ ],
+ "se_theta": [
+  0.8725752748770413,
+  0.07614522600995557,
+  0.02315230918621806
+ ],
+ "se_log_theta": [
+  0.6414579687400142,
+  0.22635322832923774,
+  0.6413382046043784
+ ],
+ "gradient": [
+  -3.325491980285733,
+  0.3553767312951095,
+  -4.762344115442829
+ ],
+ "h": 0.02,
+ "seconds": 528.4823288917542,
+ "note": "observed-information SEs of the dense MLE at N=20,000 by central finite differences in log(theta), delta method; data regenerated from the seed"
+}

@@ -7,3 +7,7 @@ fixed    0.0001  completed=True sigma_mem=0.029 factor_mem=0.08034348282585871 r
 fixed    1e-05   completed=True sigma_mem=0.035 factor_mem=0.09631518424078796 rank(mean/max)=9.027848101265823/22 dloglik=0.32564030847424874 skill={'rmse': 0.22933313032626151, 'crps': 0.1296354186143213, 'cover90': 0.9} (54s)
 adaptive 0.9     completed=True sigma_mem=0.036 factor_mem=0.05968951552422379 rank(mean/max)=4.391455696202532/20 dloglik=0.11170085280173225 skill={'rmse': 0.22927581023573373, 'crps': 0.12960541781858576, 'cover90': 0.9} (43s)
 MLE dense          theta_hat=[1.3603, 0.3364, 0.0361] evals=89 fail=0 factor_mem=None skill={'rmse': 0.22935701649326812, 'crps': 0.12967035465197832, 'cover90': 0.8933333333333333} (2401s)
+MLE fixed:1e-4     theta_hat=[0.5884, 0.2479, 0.0836] evals=210 fail=4 factor_mem=0.07938103094845257 skill={'rmse': 0.22938276042081676, 'crps': 0.12962092126330446, 'cover90': 0.89} (12294s)
+MLE adaptive:0.9   theta_hat=[1.3583, 0.3367, 0.0361] evals=100 fail=0 factor_mem=0.06067196640167992 skill={'rmse': 0.22930452741778118, 'crps': 0.12964708308199938, 'cover90': 0.8933333333333333} (5189s)
+saved ../results/preliminary/tlr_cholesky/tlr_cholesky_n20000.json
+end=Wed Oct 21 03:00:29 EDT 2026

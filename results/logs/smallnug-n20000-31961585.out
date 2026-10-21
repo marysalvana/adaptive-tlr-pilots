@@ -7,3 +7,8 @@ fixed    1e-05   mem=0.035 rank(mean/max)=5.6/17 ||dS||_F/m=10.1 PD=True dloglik
 fixed    1e-06   mem=0.043 rank(mean/max)=7.7/30 ||dS||_F/m=1.09 PD=True dloglik=-0.3819748038004036 skill={'rmse': 0.07453784027834567, 'crps': 0.042112227239216767, 'cover90': 0.8966666666666666} (98s)
 adaptive 0.9     mem=0.044 rank(mean/max)=8.0/39 ||dS||_F/m=0.54 PD=True dloglik=-0.3767703567791614 skill={'rmse': 0.07455477326458479, 'crps': 0.04212274073992738, 'cover90': 0.8966666666666666} (198s)
 MLE dense          theta_hat=[1.0366, 0.3058, 0.0047] evals=164 fail=0 skill={'rmse': 0.07455771588259427, 'crps': 0.04213031696018683, 'cover90': 0.8933333333333333} (3362s)
+MLE fixed:1e-4     theta_hat=[1.5033, 0.1694, 0.0123] evals=133 fail=27 skill={'rmse': 0.13945315288883867, 'crps': 0.07561756261479241, 'cover90': 0.92} (6046s)
+MLE fixed:1e-5     theta_hat=[1.1501, 0.3224, 0.0043] evals=184 fail=1 skill={'rmse': 0.07472396065175257, 'crps': 0.0422190956578406, 'cover90': 0.8933333333333333} (6858s)
+MLE adaptive:0.9   theta_hat=[1.3614, 0.3352, 0.0036] evals=94 fail=0 skill={'rmse': 0.07455265941383088, 'crps': 0.04212679768529365, 'cover90': 0.89} (3483s)
+saved ../results/preliminary/small_nugget/tlr_rank_rules_n20000.json
+end=Wed Oct 21 03:00:01 EDT 2026
