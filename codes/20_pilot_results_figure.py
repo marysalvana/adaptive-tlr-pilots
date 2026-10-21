@@ -3,9 +3,9 @@ recompression, against fixed tolerances, as N grows past the dense limit.
 
 Reads results/tlr_cholesky/tlr_cholesky_n{N}.json (codes/17_tlr_cholesky_pilot.py) and draws
 three panels against N: stored values of the Cholesky factor relative to a dense factor; the log-likelihood error
-at the true parameters; and the fitted nugget (the well-identified parameter) of the dense fit (with its standard error
-where computed, pilot_standard_errors_n{N}.json), the adaptive-TLR fit, and Vecchia with 30 and 60 neighbors
-(vecchia_n{N}_m{30,60}.json), against the true value: the head-to-head on estimates.  A tolerance whose factorization did not complete is marked with a
+at the true parameters; and the fitted noise variance sigma2 * eta (the identified combination of the variance and the
+relative nugget; the variance and range alone move together along a ridge of the likelihood) of the dense fit, the
+adaptive-TLR fit, and Vecchia with 30 and 60 neighbors (vecchia_n{N}_m{30,60}.json), against the true value.  A tolerance whose factorization did not complete is marked with a
 cross on the axis.  Colors: Okabe-Ito blue (adaptive), vermillion (eps = 1e-4), gray (eps = 1e-5);
 identity is also carried by the marker shape and direct labels.
 
@@ -57,7 +57,7 @@ for ax in (a1, a2, a3):
 a1.set_ylabel("factor stored values, % of dense")
 a2.set_ylabel("log-likelihood error")
 a2.set_yscale("log")
-a3.set_ylabel("fitted nugget $\\eta$")
+a3.set_ylabel("fitted noise variance $\\sigma^2\\eta$")
 for rule, val, label, col, mk in SERIES:
     xs, ys, es, fails = [], [], [], []
     for n in Ns:
@@ -88,19 +88,16 @@ handles = [Line2D([], [], color=col, marker=mk, ms=4.5, mec="white", mew=0.8, lw
 handles.append(Line2D([], [], color=INK, marker="x", ms=6, mew=1.4, ls="none", label="factorization failed (color = rule)"))
 # third panel: the fitted nugget, head to head
 a3.axhline(0.05, color=GREEN, lw=1.0, ls=(0, (4, 2)), zorder=1)
-a3.text(Ns[0] / 1.3, 0.0515, "truth", color=GREEN, fontsize=6, va="bottom", ha="left")
+a3.text(Ns[0] / 1.3, 0.0502, "truth", color=GREEN, fontsize=6, va="bottom", ha="left")
 h3 = [Line2D([], [], color=GREEN, lw=1.0, ls=(0, (4, 2)), label="truth")]
 for key, label, col, mk in EST_SERIES:
-    xs = [n for n in Ns if (key, n) in est]; ys = [est[(key, n)][2] for n in xs]
+    xs = [n for n in Ns if (key, n) in est]; ys = [est[(key, n)][0] * est[(key, n)][2] for n in xs]
     kw = dict(color=col, marker=mk, ms=5.5 if key == "dense" else 4.5, lw=1.2, zorder=3)
     if key == "dense": kw.update(mfc="white", mew=1.2)                       # hollow, so it stays visible under the adaptive marker
     else: kw.update(mec="white", mew=0.8)
     a3.plot(xs, ys, label=label, **kw)
     h3.append(Line2D([], [], label=label, **{k: v for k, v in kw.items() if k != "zorder"}))
-for n, s in se.items():
-    if ("dense", n) in est:
-        a3.errorbar([n], [est[("dense", n)][2]], yerr=[s[2]], color=INK, capsize=2, lw=0.8, zorder=2)
-a3.set_ylim(0.02, 0.11)
+a3.set_ylim(0.040, 0.060)
 fig.legend(handles=handles, loc="lower center", ncol=4, frameon=False, fontsize=6.5, bbox_to_anchor=(0.34, -0.02), handletextpad=0.5, columnspacing=1.2)
 fig.legend(handles=h3, loc="lower center", ncol=5, frameon=False, fontsize=6.5, bbox_to_anchor=(0.5, -0.09), handletextpad=0.5, columnspacing=1.2)
 for ax in (a1, a2):                                       # dense FP64 fit limit of the wind-gust study on one 80 GB GPU

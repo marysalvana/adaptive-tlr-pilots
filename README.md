@@ -161,11 +161,15 @@ Vecchia (GpGp, `12_vecchia_baseline.R`, data regenerated from the seed), stored 
 | standard, N = 100,000 (TLR-simulated field; no dense) | 30 | 0.954, 0.284, 0.052 | 24 s | 0.2274 | 0.1283 | 0.903 | 3,100,000 |
 | standard, N = 100,000 | 60 | 0.860, 0.272, 0.058 | 95 s | 0.2243 | 0.1264 | 0.900 | 6,100,000 |
 
-Vecchia is fast and predicts well everywhere, and at N = 100,000 with 30 neighbors its estimates are close to the
-truth; at N = 40,000 and 60,000 both neighbor counts put the nugget at about twice its true value and the variance at
-about half (the adaptive rule's predictions at those sizes are equally good, RMSE 0.2260 and 0.2111). Head-to-head
-likelihood evaluations at these points (`codes/23_vecchia_headtohead.py`, `vecchia_headtohead_n{N}.json`) were
-pending when this file was written. Its parameter estimates move with the neighbor count
+Vecchia is fast and predicts well everywhere. Its raw estimates move with N and with the neighbor count (at N = 40,000
+and 60,000 both neighbor counts give a relative nugget of about 0.1 and a variance of about 0.5), but the quantities
+the data identify are recovered by every method at every size: the noise variance sigma2 * eta is 0.049 to 0.050 for
+dense, adaptive, and Vecchia fits against a true 0.05, and the microergodic ratio sigma2 / range^3 is 32 to 46 around a
+true 37 for all of them (dense 41.0 and 35.7 at N = 10,000 and 20,000). The variance and range move together along a
+ridge of the likelihood, so a halved variance with a doubled relative nugget is not an error. Head-to-head likelihood
+evaluations at the fitted points (`codes/23_vecchia_headtohead.py`, `vecchia_headtohead_n{N}.json`): at N = 10,000 and
+20,000 every fit, Vecchia's included, lies within about one log-likelihood unit of the best point. Its raw parameter
+estimates move with the neighbor count
 (sigma2 1.54 and 0.86 at N = 20,000 against the dense 1.36, i.e. 0.2 to 0.9 dense standard errors with
 `pilot_standard_errors_n20000.json`: SEs 0.87, 0.076, 0.023 by finite differences at the dense MLE, whose
 gradient there is not quite zero, so these SEs are approximate), and nothing short of a dense fit says which
