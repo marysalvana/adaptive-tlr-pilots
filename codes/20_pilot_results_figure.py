@@ -2,10 +2,11 @@
 recompression, against fixed tolerances, as N grows past the dense limit.
 
 Reads results/tlr_cholesky/tlr_cholesky_n{N}.json (codes/17_tlr_cholesky_pilot.py) and draws
-three panels against N: stored values of the Cholesky factor relative to a dense factor; the log-likelihood error
-at the true parameters; and the fitted noise variance sigma2 * eta (the identified combination of the variance and the
-relative nugget; the variance and range alone move together along a ridge of the likelihood) of the dense fit, the
-adaptive-TLR fit, and Vecchia with 30 and 60 neighbors (vecchia_n{N}_m{30,60}.json), against the true value.  A tolerance whose factorization did not complete is marked with a
+two panels against N, stored values of the Cholesky factor relative to a dense factor and the log-likelihood
+error at the true parameters, and a third head to head with Vecchia at N = 10,000 (results/screening_stress,
+codes 24-26): log-likelihood error at the true parameters against stored values, Vecchia traced over its neighbor count
+and adaptive TLR one point per field, on the pilot field and a smoother, longer-range field (SS_FIELDS overrides).
+A tolerance whose factorization did not complete is marked with a
 cross on the axis.  Colors: Okabe-Ito blue (adaptive), vermillion (eps = 1e-4), gray (eps = 1e-5);
 identity is also carried by the marker shape and direct labels.
 
@@ -16,6 +17,7 @@ import glob, json, os, re
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BLUE, VERM, GRAY, INK, RULE = "#0072B2", "#D55E00", "#6E6E6E", "#1a1a1a", "#c9c8c2"
@@ -47,17 +49,22 @@ GREEN = "#009E73"
 EST_SERIES = [("dense", "dense fit", INK, "D"), ("adaptive", "adaptive TLR fit", BLUE, "o"),
               ("vecchia30", "Vecchia, 30 neighbors", VERM, "s"), ("vecchia60", "Vecchia, 60 neighbors", GRAY, "^")]
 
-plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 7.5, "axes.edgecolor": RULE, "axes.linewidth": 0.6,
-                     "xtick.color": INK, "ytick.color": INK, "axes.labelcolor": INK})
-fig, (a1, a2, a3) = plt.subplots(1, 3, figsize=(6.6, 2.3))
+plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 7, "axes.edgecolor": RULE, "axes.linewidth": 0.6,
+                     "xtick.color": INK, "ytick.color": INK, "axes.labelcolor": INK, "axes.titlesize": 7.5,
+                     "axes.titleweight": "bold", "axes.titlelocation": "left"})
+VEC = "#009E73"                                            # Vecchia: its own color (vermillion is the 1e-4 tolerance)
+fig, (a1, a2, a3) = plt.subplots(1, 3, figsize=(6.6, 1.95), gridspec_kw=dict(wspace=0.42, width_ratios=[1, 1, 1.15]))
 for ax in (a1, a2, a3):
+    ax.grid(axis="y", color=RULE, lw=0.4, alpha=0.6); ax.set_axisbelow(True); ax.spines[["top", "right"]].set_visible(False)
+for ax in (a1, a2):
     ax.set_xscale("log"); ax.set_xticks(Ns); ax.set_xticklabels([("" if n == 60000 else f"{n//1000}k") for n in Ns], fontsize=6.5)
-    ax.minorticks_off(); ax.grid(axis="y", color=RULE, lw=0.4, alpha=0.6); ax.set_axisbelow(True)
-    ax.spines[["top", "right"]].set_visible(False); ax.set_xlabel("$N$"); ax.set_xlim(Ns[0] / 1.35, Ns[-1] * 1.35)
-a1.set_ylabel("factor stored values, % of dense")
-a2.set_ylabel("log-likelihood error")
-a2.set_yscale("log")
-a3.set_ylabel("fitted noise variance $\\sigma^2\\eta$")
+    ax.minorticks_off(); ax.set_xlabel("$N$", labelpad=1); ax.set_xlim(Ns[0] / 1.3, Ns[-1] * 1.3)
+    ax.axvline(27440, color=INK, lw=0.6, ls=(0, (3, 3)), alpha=0.6)   # dense FP64 fit limit, wind-gust study, one 80 GB GPU
+a1.set_title("(a) factor storage"); a1.set_ylabel("% of a dense factor", labelpad=1)
+a2.set_title("(b) likelihood error"); a2.set_ylabel("|log-likelihood error|", labelpad=1); a2.set_yscale("log")
+a3.set_title("(c) vs. Vecchia, $N=10{,}000$")
+
+LBL = {("adaptive", 0.9): "adaptive", ("fixed", 1e-4): "$\\varepsilon=10^{-4}$", ("fixed", 1e-5): "$\\varepsilon=10^{-5}$"}
 for rule, val, label, col, mk in SERIES:
     xs, ys, es, fails = [], [], [], []
     for n in Ns:
@@ -65,45 +72,59 @@ for rule, val, label, col, mk in SERIES:
         if x is None: continue
         if x["completed"]:
             xs.append(n); ys.append(100 * x["factor_memory_frac"])
-            if x.get("loglik_err") is not None:
-                es.append((n, abs(x["loglik_err"])))
+            if x.get("loglik_err") is not None: es.append((n, abs(x["loglik_err"])))
         else:
             fails.append(n)
-    a1.plot(xs, ys, color=col, lw=1.4, marker=mk, ms=4.5, mec="white", mew=0.8, label=label, zorder=3)
-    if es:
-        a2.plot([e[0] for e in es], [e[1] for e in es], color=col, lw=1.4, marker=mk, ms=4.5, mec="white", mew=0.8, label=label, zorder=3)
-    for n in fails:                                       # failed factorization: cross on the axis
-        for ax, y in ((a1, 0.5), (a2, 0.05)):
-            ax.plot([n], [y], marker="x", color=col, ms=7, mew=1.6, ls="none", zorder=4)
-    if xs:                                                # direct label at the last point
-        a1.annotate(label, (xs[-1], ys[-1]), xytext=(4, 0), textcoords="offset points", color=INK, fontsize=6.5, va="center")
-a1.set_ylim(0, 15); a2.set_ylim(0.03, 30)
-# sizes without an exact log-likelihood (no dense factor): say so in the error panel
-no_ref = [n for n in Ns if all(rows.get((r, v, n), {}).get("loglik_err") is None for r, v, _, _, _ in SERIES if rows.get((r, v, n), {}).get("completed"))]
-for n in no_ref:
-    a2.text(n, 0.45, "no dense\nreference", ha="center", va="center", fontsize=6, color=BLUE)
-# one legend for both panels: the three rules and the failure marker (its color is the rule's)
-from matplotlib.lines import Line2D
-handles = [Line2D([], [], color=col, marker=mk, ms=4.5, mec="white", mew=0.8, lw=1.4, label=label) for _, _, label, col, mk in SERIES]
-handles.append(Line2D([], [], color=INK, marker="x", ms=6, mew=1.4, ls="none", label="factorization failed (color = rule)"))
-# third panel: the fitted nugget, head to head
-a3.axhline(0.05, color=GREEN, lw=1.0, ls=(0, (4, 2)), zorder=1)
-a3.text(Ns[0] / 1.3, 0.0502, "truth", color=GREEN, fontsize=6, va="bottom", ha="left")
-h3 = [Line2D([], [], color=GREEN, lw=1.0, ls=(0, (4, 2)), label="truth")]
-for key, label, col, mk in EST_SERIES:
-    xs = [n for n in Ns if (key, n) in est]; ys = [est[(key, n)][0] * est[(key, n)][2] for n in xs]
-    kw = dict(color=col, marker=mk, ms=5.5 if key == "dense" else 4.5, lw=1.2, zorder=3)
-    if key == "dense": kw.update(mfc="white", mew=1.2)                       # hollow, so it stays visible under the adaptive marker
-    else: kw.update(mec="white", mew=0.8)
-    a3.plot(xs, ys, label=label, **kw)
-    h3.append(Line2D([], [], label=label, **{k: v for k, v in kw.items() if k != "zorder"}))
-a3.set_ylim(0.040, 0.060)
-fig.legend(handles=handles, loc="lower center", ncol=4, frameon=False, fontsize=6.5, bbox_to_anchor=(0.34, -0.02), handletextpad=0.5, columnspacing=1.2)
-fig.legend(handles=h3, loc="lower center", ncol=5, frameon=False, fontsize=6.5, bbox_to_anchor=(0.5, -0.09), handletextpad=0.5, columnspacing=1.2)
-for ax in (a1, a2):                                       # dense FP64 fit limit of the wind-gust study on one 80 GB GPU
-    ax.axvline(27440, color=INK, lw=0.6, ls=(0, (3, 3)), alpha=0.7)
-a1.text(27440 * 1.06, 14.3, "dense fit limit,\none 80 GB GPU", fontsize=6, color=INK, va="top")
-fig.tight_layout(w_pad=1.6, rect=(0, 0.12, 1, 1))
+    kw = dict(color=col, lw=1.3, marker=mk, ms=4, mec="white", mew=0.7, zorder=3)
+    a1.plot(xs, ys, **kw)
+    if es: a2.plot([e[0] for e in es], [e[1] for e in es], **kw)
+    for n in fails:
+        for ax, y in ((a1, 0.6), (a2, 0.045)):
+            ax.plot([n], [y], marker="x", color=col, ms=5.5, mew=1.4, ls="none", zorder=4)
+    if xs:                                                 # direct label left of the first point
+        a1.annotate(LBL[(rule, val)], (xs[0], ys[0]), xytext=(-5, 0), textcoords="offset points", color=col,
+                    fontsize=6.3, va="center", ha="right")
+a1.set_ylim(0, 15); a1.set_xlim(Ns[0] / 2.6, Ns[-1] * 1.3)
+a1.text(27440 * 1.08, 14.6, "dense fit limit,\none 80 GB GPU", fontsize=5.8, color=INK, va="top")
+a1.text(60000, 9.6, "$\\times$: factorization\nfailed", fontsize=5.8, color=VERM, ha="center", va="top")
+a2.set_ylim(0.03, 40)
+a2.text(95000, 4.0, "100k: no dense\nreference", ha="right", va="center", fontsize=5.8, color=BLUE)
+
+# (c) head to head with Vecchia on all nine screening fields at N = 10,000 (codes 24, 26, 31, 32): KL divergence of each
+# approximation from the exact Gaussian model at the true parameters (Guinness 2018; Katzfuss and Guinness 2021).
+# Rows: fields (smoothness nu, range, relative nugget).  Blue: adaptive TLR.  Green: response Vecchia (GpGp, max-min
+# ordering) with 30 (filled square) and 60 (open square) neighbors, and with the neighbors that match the adaptive TLR
+# storage (diamond); each the mean over seeded orderings.
+SS = os.environ.get("SS_DIR", os.path.join(RES, "screening_stress"))
+fields = []
+for tag in sorted(os.listdir(SS)):
+    d = os.path.join(SS, tag)
+    if not os.path.exists(os.path.join(d, "kl_vecchia.json")): continue
+    st = json.load(open(os.path.join(d, "stress.json")))["settings"]
+    kt = json.load(open(os.path.join(d, "kl_tlr.json")))["kl"]
+    kv = {x["m"]: x["mean"] for x in json.load(open(os.path.join(d, "kl_vecchia.json")))["summary"]}
+    km = None
+    if os.path.exists(os.path.join(d, "kl_vecchia_matched.json")):
+        mm = json.load(open(os.path.join(d, "vecchia_matched.json")))["m_match"]
+        km = {x["m"]: x["mean"] for x in json.load(open(os.path.join(d, "kl_vecchia_matched.json")))["summary"]}.get(mm)
+    fields.append(((st["nu"], st["eta"], st["range"]), kt, kv, km))
+fields.sort(key=lambda x: x[0])
+NU = {1.5: "3/2", 2.5: "5/2"}
+for i, (key, kt, kv, km) in enumerate(fields):
+    yv = len(fields) - 1 - i
+    a3.plot([kv[30]], [yv], marker="s", ms=3.8, color=VEC, ls="none", zorder=3)
+    a3.plot([kv[60]], [yv], marker="s", ms=3.8, color=VEC, mfc="white", mew=0.9, ls="none", zorder=3)
+    if km is not None:
+        a3.plot([km], [yv], marker="D", ms=3.4, color=VEC, mfc="white", mew=0.9, ls="none", zorder=3)
+    a3.plot([kt], [yv], marker="o", ms=4.5, color=BLUE, mec="white", mew=0.6, ls="none", zorder=4)
+a3.set_yticks(range(len(fields)))
+a3.set_yticklabels([("pilot  " if (nu, eta, rg) == (1.5, 0.05, 0.3) else "") + f"{NU[nu]}  {rg:g}  {eta:g}" for (nu, eta, rg), _, _, _ in fields][::-1], fontsize=5.6)
+a3.set_ylim(-3.6, len(fields) - 0.3)
+a3.set_xscale("log"); a3.set_xlim(0.02, 400); a3.set_xticks([0.1, 1, 10, 100]); a3.set_xticklabels(["0.1", "1", "10", "100"], fontsize=6.5)
+a3.minorticks_off(); a3.grid(axis="x", color=RULE, lw=0.4, alpha=0.6); a3.grid(axis="y", visible=False)
+a3.set_xlabel("KL divergence (0 = exact)", labelpad=1); a3.set_ylabel("")
+a3.text(0.97, 0.03, "rows: smoothness $\\nu$, range, nugget\nblue: adaptive TLR\ngreen: Vecchia, $m=30$ (filled), $m=60$ (open),\nsame storage as TLR (diamond)",
+        transform=a3.transAxes, fontsize=5.4, ha="right", va="bottom", color=INK, linespacing=1.15)
 for ext in ("pdf", "png"):
-    fig.savefig(os.path.join(ROOT, "results", f"pilot_results.{ext}"), dpi=300, bbox_inches="tight")
-print("sizes", Ns, "-> overleaf/figures/pilot_results.pdf")
+    fig.savefig(os.path.join(os.environ.get("FIG_OUT", os.path.join(ROOT, "results")), f"pilot_results.{ext}"), dpi=300, bbox_inches="tight", pad_inches=0.02)
+print("sizes", Ns, "-> results/pilot_results.pdf")

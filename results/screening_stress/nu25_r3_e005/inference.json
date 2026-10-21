@@ -1,0 +1,306 @@
+{
+ "tau": 0.9,
+ "starts": {
+  "values": {
+   "truth": 723.8113829588965,
+   "24 exact fit": 724.383152655415,
+   "Vecchia m=30 fit": 720.5176735525947,
+   "Vecchia m=60 fit": 719.5129653196855
+  },
+  "chosen": "24 exact fit"
+ },
+ "exact_mle": {
+  "theta_hat": [
+   1.138866152235757,
+   2.7392963858331383,
+   0.04425125543840718
+  ],
+  "loglik": 724.3831605611031,
+  "evals": 44,
+  "seconds": 160.7529330253601
+ },
+ "tlr_mle": {
+  "theta_hat": [
+   1.124243220810277,
+   3.062780603773871,
+   0.04477344679177312
+  ],
+  "tlr_loglik": 722.9798703688284,
+  "exact_loglik": 724.0369790812547,
+  "evals": 58,
+  "failures": 0,
+  "seconds": 336.8675980567932,
+  "factor_frac": 0.06756324367563243,
+  "gap_below_exact_mle": 0.3461814798483829
+ },
+ "vecchia_fits": [
+  {
+   "m": 30,
+   "theta_hat": {
+    "sigma2": 0.40234058,
+    "range": 1.45632549,
+    "eta": 0.12528735
+   },
+   "exact_loglik": 719.7727319223814,
+   "gap_below_exact_mle": 4.610428638721714
+  },
+  {
+   "m": 60,
+   "theta_hat": {
+    "sigma2": 0.44870835,
+    "range": 1.57747198,
+    "eta": 0.11239592
+   },
+   "exact_loglik": 720.9427219364061,
+   "gap_below_exact_mle": 3.4404386246969807
+  }
+ ],
+ "shape_error": {
+  "adaptive TLR": {
+   "sd": 0.462973218241499,
+   "max_abs": 0.8823947303838697,
+   "points": 33
+  },
+  "ungrouped_m30": {
+   "sd": 2.1849549808495805,
+   "sd_min": 1.2379256973008121,
+   "sd_max": 4.899334606060207,
+   "orderings": 8,
+   "max_abs": 4.9615477107857195,
+   "points": 33
+  },
+  "grouped_m30": {
+   "sd": 2.5676879634923115,
+   "sd_min": 1.566848553390261,
+   "sd_max": 4.810181827819986,
+   "orderings": 8,
+   "max_abs": 6.117138441800694,
+   "points": 33
+  },
+  "ungrouped_m60": {
+   "sd": 1.9288401879279173,
+   "sd_min": 0.8556114226799711,
+   "sd_max": 3.2671559035745963,
+   "orderings": 8,
+   "max_abs": 4.264713251137563,
+   "points": 33
+  },
+  "grouped_m60": {
+   "sd": 1.8740576012285486,
+   "sd_min": 0.71116697403306,
+   "sd_max": 2.821658504616783,
+   "orderings": 8,
+   "max_abs": 4.2027236456853085,
+   "points": 33
+  }
+ },
+ "grid_note": "Sobol points in exact_mle * exp(+-0.3) per parameter, plus the exact MLE; spread of l_approx - l_exact after removing its mean",
+ "vecchia_fit_orderings": [
+  {
+   "m": 30,
+   "seed": 1,
+   "theta_hat": {
+    "sigma2": 0.40234058,
+    "range": 1.45632549,
+    "eta": 0.12528735
+   },
+   "seconds": 4.88,
+   "exact_loglik": 719.7727319223814,
+   "gap_below_exact_mle": 4.610428638721714
+  },
+  {
+   "m": 30,
+   "seed": 2,
+   "theta_hat": {
+    "sigma2": 0.38933019,
+    "range": 1.47786881,
+    "eta": 0.12931942
+   },
+   "seconds": 3.768,
+   "exact_loglik": 720.1546045030882,
+   "gap_below_exact_mle": 4.228556058014874
+  },
+  {
+   "m": 30,
+   "seed": 3,
+   "theta_hat": {
+    "sigma2": 0.09955968,
+    "range": 0.7482263,
+    "eta": 0.50648021
+   },
+   "seconds": 3.607,
+   "exact_loglik": 703.700620076037,
+   "gap_below_exact_mle": 20.682540485066056
+  },
+  {
+   "m": 30,
+   "seed": 4,
+   "theta_hat": {
+    "sigma2": 0.21138194,
+    "range": 1.10963443,
+    "eta": 0.23743951
+   },
+   "seconds": 3.996,
+   "exact_loglik": 715.327590803754,
+   "gap_below_exact_mle": 9.055569757349076
+  },
+  {
+   "m": 30,
+   "seed": 5,
+   "theta_hat": {
+    "sigma2": 0.30797892,
+    "range": 1.2120844,
+    "eta": 0.16358876
+   },
+   "seconds": 4.233,
+   "exact_loglik": 716.503899914027,
+   "gap_below_exact_mle": 7.87926064707608
+  },
+  {
+   "m": 30,
+   "seed": 6,
+   "theta_hat": {
+    "sigma2": 0.33947629,
+    "range": 1.32654279,
+    "eta": 0.14834086
+   },
+   "seconds": 4.443,
+   "exact_loglik": 718.3342087209439,
+   "gap_below_exact_mle": 6.048951840159134
+  },
+  {
+   "m": 30,
+   "seed": 7,
+   "theta_hat": {
+    "sigma2": 0.35116843,
+    "range": 1.24570646,
+    "eta": 0.14308389
+   },
+   "seconds": 3.565,
+   "exact_loglik": 716.6636552904438,
+   "gap_below_exact_mle": 7.719505270659283
+  },
+  {
+   "m": 30,
+   "seed": 8,
+   "theta_hat": {
+    "sigma2": 0.4479251,
+    "range": 1.42789587,
+    "eta": 0.11255402
+   },
+   "seconds": 3.581,
+   "exact_loglik": 718.971915873788,
+   "gap_below_exact_mle": 5.4112446873150475
+  },
+  {
+   "m": 60,
+   "seed": 1,
+   "theta_hat": {
+    "sigma2": 0.44870835,
+    "range": 1.57747198,
+    "eta": 0.11239592
+   },
+   "seconds": 12.678,
+   "exact_loglik": 720.9427219364061,
+   "gap_below_exact_mle": 3.4404386246969807
+  },
+  {
+   "m": 60,
+   "seed": 2,
+   "theta_hat": {
+    "sigma2": 0.53778803,
+    "range": 1.88741395,
+    "eta": 0.09351763
+   },
+   "seconds": 14.877,
+   "exact_loglik": 723.0392296098562,
+   "gap_below_exact_mle": 1.3439309512468753
+  },
+  {
+   "m": 60,
+   "seed": 3,
+   "theta_hat": {
+    "sigma2": 0.49379513,
+    "range": 1.65866894,
+    "eta": 0.10197218
+   },
+   "seconds": 10.483,
+   "exact_loglik": 721.5222404789838,
+   "gap_below_exact_mle": 2.8609200821192644
+  },
+  {
+   "m": 60,
+   "seed": 4,
+   "theta_hat": {
+    "sigma2": 0.30208286,
+    "range": 1.31986412,
+    "eta": 0.16675562
+   },
+   "seconds": 11.146,
+   "exact_loglik": 718.5695923179483,
+   "gap_below_exact_mle": 5.813568243154805
+  },
+  {
+   "m": 60,
+   "seed": 5,
+   "theta_hat": {
+    "sigma2": 0.4718153,
+    "range": 1.61987227,
+    "eta": 0.10679207
+   },
+   "seconds": 10.307,
+   "exact_loglik": 721.2586003099059,
+   "gap_below_exact_mle": 3.124560251197181
+  },
+  {
+   "m": 60,
+   "seed": 6,
+   "theta_hat": {
+    "sigma2": 0.53427678,
+    "range": 1.91680661,
+    "eta": 0.09412815
+   },
+   "seconds": 12.016,
+   "exact_loglik": 723.1979635187108,
+   "gap_below_exact_mle": 1.1851970423922467
+  },
+  {
+   "m": 60,
+   "seed": 7,
+   "theta_hat": {
+    "sigma2": 0.42395401,
+    "range": 1.22681738,
+    "eta": 0.11887603
+   },
+   "seconds": 12.72,
+   "exact_loglik": 715.3512617952347,
+   "gap_below_exact_mle": 9.031898765868391
+  },
+  {
+   "m": 60,
+   "seed": 8,
+   "theta_hat": {
+    "sigma2": 0.40160237,
+    "range": 1.71880293,
+    "eta": 0.12536541
+   },
+   "seconds": 7.798,
+   "exact_loglik": 722.3886939727836,
+   "gap_below_exact_mle": 1.994466588319483
+  }
+ ],
+ "vecchia_fit_gap_over_orderings": {
+  "30": {
+   "mean": 8.204507173045158,
+   "min": 4.228556058014874,
+   "max": 20.682540485066056,
+   "orderings": 8
+  },
+  "60": {
+   "mean": 3.5993725686244034,
+   "min": 1.1851970423922467,
+   "max": 9.031898765868391,
+   "orderings": 8
+  }
+ }
+}

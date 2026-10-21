@@ -1,0 +1,199 @@
+{
+ "settings": {
+  "stage": "sim",
+  "tag": "nu15_r3_e005",
+  "n": 10000,
+  "n_pred": 300,
+  "b": 250,
+  "nu": 1.5,
+  "sigma2": 1.0,
+  "range": 3.0,
+  "eta": 0.05,
+  "tau": 0.9,
+  "mle": 1,
+  "seed": 20261020,
+  "out": "../results/preliminary/screening_stress"
+ },
+ "theta_true": [
+  1.0,
+  3.0,
+  0.05
+ ],
+ "sim_seconds": 6.266292095184326,
+ "exact_true": {
+  "loglik": 704.2493342423404,
+  "skill": {
+   "rmse": 0.2046836169332791,
+   "crps": 0.11514567700796846,
+   "cover90": 0.9333333333333333
+  },
+  "seconds": 6.133692979812622
+ },
+ "tlr_true": {
+  "tau": 0.9,
+  "completed": true,
+  "seconds": 4.584181070327759,
+  "loglik": 703.1275361994158,
+  "loglik_err": -1.1217980429246381,
+  "factor_frac": 0.07187281271872813,
+  "mean_rank": 2.805128205128205,
+  "max_rank": 5,
+  "skill": {
+   "rmse": 0.2046667081909111,
+   "crps": 0.11513563389710328,
+   "cover90": 0.9333333333333333
+  }
+ },
+ "exact_mle": {
+  "theta_hat": [
+   1.1670582381503212,
+   3.134917404369551,
+   0.04319276314547705
+  ],
+  "loglik": 704.4743905715022,
+  "evals": 145,
+  "failures": 0,
+  "seconds": 454.5562129020691,
+  "skill": {
+   "rmse": 0.2046850794933275,
+   "crps": 0.11517329536255948,
+   "cover90": 0.9333333333333333
+  }
+ },
+ "vecchia_fixed_theta": [
+  {
+   "m": 5,
+   "loglik": -180.06449596,
+   "loglik_min": -202.09143085,
+   "loglik_max": -159.95096347,
+   "orderings": 8,
+   "seconds_loglik": 0.104125,
+   "skill": {
+    "rmse": 0.22296288,
+    "crps": 0.12664046,
+    "cover90": 0.93
+   },
+   "loglik_err": -884.3138302023403
+  },
+  {
+   "m": 10,
+   "loglik": 256.29378544,
+   "loglik_min": 233.28265238,
+   "loglik_max": 287.56181822,
+   "orderings": 8,
+   "seconds_loglik": 0.113875,
+   "skill": {
+    "rmse": 0.21360618,
+    "crps": 0.12047241,
+    "cover90": 0.93
+   },
+   "loglik_err": -447.9555488023404
+  },
+  {
+   "m": 20,
+   "loglik": 498.79351031,
+   "loglik_min": 485.49115514,
+   "loglik_max": 518.04278577,
+   "orderings": 8,
+   "seconds_loglik": 0.209,
+   "skill": {
+    "rmse": 0.20688398,
+    "crps": 0.11701966,
+    "cover90": 0.93666667
+   },
+   "loglik_err": -205.45582393234042
+  },
+  {
+   "m": 30,
+   "loglik": 576.61021026,
+   "loglik_min": 565.55498753,
+   "loglik_max": 589.13536634,
+   "orderings": 8,
+   "seconds_loglik": 0.29825,
+   "skill": {
+    "rmse": 0.2053149,
+    "crps": 0.1161782,
+    "cover90": 0.93333333
+   },
+   "loglik_err": -127.63912398234038
+  },
+  {
+   "m": 60,
+   "loglik": 649.35316152,
+   "loglik_min": 639.780192,
+   "loglik_max": 659.90245129,
+   "orderings": 8,
+   "seconds_loglik": 0.626375,
+   "skill": {
+    "rmse": 0.20607768,
+    "crps": 0.11633809,
+    "cover90": 0.94
+   },
+   "loglik_err": -54.89617272234045
+  },
+  {
+   "m": 120,
+   "loglik": 679.80776768,
+   "loglik_min": 668.95772596,
+   "loglik_max": 686.37073705,
+   "orderings": 8,
+   "seconds_loglik": 1.689,
+   "skill": {
+    "rmse": 0.20547945,
+    "crps": 0.11599182,
+    "cover90": 0.93666667
+   },
+   "loglik_err": -24.441566562340427
+  }
+ ],
+ "vecchia_fits": [
+  {
+   "m": 30,
+   "theta_hat": {
+    "sigma2": 0.30090835,
+    "range": 1.22458294,
+    "eta": 0.16718963
+   },
+   "beta": 0.86810596,
+   "vecchia_loglik": 621.32111927,
+   "seconds": 5.499,
+   "skill": {
+    "rmse": 0.20484056,
+    "crps": 0.11593945,
+    "cover90": 0.93666667
+   },
+   "exact_loglik_at_theta_hat": 696.0502257121298,
+   "gap_below_exact_mle": 8.424164859372468,
+   "noise_var": 0.0503087557004105,
+   "skill_exact_model_at_theta_hat": {
+    "rmse": 0.20502171817199522,
+    "crps": 0.11540657074367493,
+    "cover90": 0.9333333333333333
+   }
+  },
+  {
+   "m": 60,
+   "theta_hat": {
+    "sigma2": 0.45594949,
+    "range": 1.82395666,
+    "eta": 0.11054075
+   },
+   "beta": 0.57955935,
+   "vecchia_loglik": 671.12283505,
+   "seconds": 13.6,
+   "skill": {
+    "rmse": 0.20591091,
+    "crps": 0.11626085,
+    "cover90": 0.94
+   },
+   "exact_loglik_at_theta_hat": 702.1586176638848,
+   "gap_below_exact_mle": 2.315772907617429,
+   "noise_var": 0.050400998586717496,
+   "skill_exact_model_at_theta_hat": {
+    "rmse": 0.20487105668542732,
+    "crps": 0.11529783146711213,
+    "cover90": 0.9333333333333333
+   }
+  }
+ ]
+}

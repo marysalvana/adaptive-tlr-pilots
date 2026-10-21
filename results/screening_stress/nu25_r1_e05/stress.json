@@ -1,0 +1,199 @@
+{
+ "settings": {
+  "stage": "sim",
+  "tag": "nu25_r1_e05",
+  "n": 10000,
+  "n_pred": 300,
+  "b": 250,
+  "nu": 2.5,
+  "sigma2": 1.0,
+  "range": 1.0,
+  "eta": 0.5,
+  "tau": 0.9,
+  "mle": 1,
+  "seed": 20261020,
+  "out": "../results/preliminary/screening_stress"
+ },
+ "theta_true": [
+  1.0,
+  1.0,
+  0.5
+ ],
+ "sim_seconds": 3.4305572509765625,
+ "exact_true": {
+  "loglik": -10798.029185774081,
+  "skill": {
+   "rmse": 0.6468360212302801,
+   "crps": 0.36377175799605355,
+   "cover90": 0.9333333333333333
+  },
+  "seconds": 6.415704011917114
+ },
+ "tlr_true": {
+  "tau": 0.9,
+  "completed": true,
+  "seconds": 4.58158802986145,
+  "loglik": -10798.832446423203,
+  "loglik_err": -0.803260649121512,
+  "factor_frac": 0.07137286271372863,
+  "mean_rank": 2.741025641025641,
+  "max_rank": 4,
+  "skill": {
+   "rmse": 0.6468157687480665,
+   "crps": 0.36376507984287415,
+   "cover90": 0.9333333333333333
+  }
+ },
+ "exact_mle": {
+  "theta_hat": [
+   0.5018864114015212,
+   0.8005457213287022,
+   1.004535348340715
+  ],
+  "loglik": -10798.176724407596,
+  "evals": 152,
+  "failures": 0,
+  "seconds": 480.07800793647766,
+  "skill": {
+   "rmse": 0.6471223969409488,
+   "crps": 0.36404211840831757,
+   "cover90": 0.9333333333333333
+  }
+ },
+ "vecchia_fixed_theta": [
+  {
+   "m": 5,
+   "loglik": -11583.47322562,
+   "loglik_min": -11614.41843088,
+   "loglik_max": -11565.03542606,
+   "orderings": 8,
+   "seconds_loglik": 0.10625,
+   "skill": {
+    "rmse": 0.69429292,
+    "crps": 0.39434392,
+    "cover90": 0.94333333
+   },
+   "loglik_err": -785.4440398459192
+  },
+  {
+   "m": 10,
+   "loglik": -11221.17524205,
+   "loglik_min": -11249.20017462,
+   "loglik_max": -11186.4296402,
+   "orderings": 8,
+   "seconds_loglik": 0.12425,
+   "skill": {
+    "rmse": 0.67104872,
+    "crps": 0.37851064,
+    "cover90": 0.94333333
+   },
+   "loglik_err": -423.14605627591845
+  },
+  {
+   "m": 20,
+   "loglik": -11000.07658926,
+   "loglik_min": -11015.59459577,
+   "loglik_max": -10982.08313583,
+   "orderings": 8,
+   "seconds_loglik": 0.207125,
+   "skill": {
+    "rmse": 0.65267925,
+    "crps": 0.36914933,
+    "cover90": 0.93666667
+   },
+   "loglik_err": -202.04740348591804
+  },
+  {
+   "m": 30,
+   "loglik": -10926.31337992,
+   "loglik_min": -10933.9685756,
+   "loglik_max": -10914.7281689,
+   "orderings": 8,
+   "seconds_loglik": 0.304875,
+   "skill": {
+    "rmse": 0.64863888,
+    "crps": 0.3670499,
+    "cover90": 0.93333333
+   },
+   "loglik_err": -128.28419414591917
+  },
+  {
+   "m": 60,
+   "loglik": -10854.81653473,
+   "loglik_min": -10866.12076195,
+   "loglik_max": -10844.88509029,
+   "orderings": 8,
+   "seconds_loglik": 0.65125,
+   "skill": {
+    "rmse": 0.65150867,
+    "crps": 0.36774338,
+    "cover90": 0.94
+   },
+   "loglik_err": -56.78734895591879
+  },
+  {
+   "m": 120,
+   "loglik": -10824.6322328,
+   "loglik_min": -10832.292703,
+   "loglik_max": -10818.47277108,
+   "orderings": 8,
+   "seconds_loglik": 1.69075,
+   "skill": {
+    "rmse": 0.65002413,
+    "crps": 0.36685177,
+    "cover90": 0.93666667
+   },
+   "loglik_err": -26.603047025919295
+  }
+ ],
+ "vecchia_fits": [
+  {
+   "m": 30,
+   "theta_hat": {
+    "sigma2": 1.13336635,
+    "range": 1.05230987,
+    "eta": 0.44453683
+   },
+   "beta": 0.10127616,
+   "vecchia_loglik": -10879.98347481,
+   "seconds": 5.917,
+   "skill": {
+    "rmse": 0.64760762,
+    "crps": 0.36654431,
+    "cover90": 0.93666667
+   },
+   "exact_loglik_at_theta_hat": -10798.03544774558,
+   "gap_below_exact_mle": -0.1412766620160255,
+   "noise_var": 0.5038230844576704,
+   "skill_exact_model_at_theta_hat": {
+    "rmse": 0.6467416256156944,
+    "crps": 0.3637902253386101,
+    "cover90": 0.9333333333333333
+   }
+  },
+  {
+   "m": 60,
+   "theta_hat": {
+    "sigma2": 1.27562603,
+    "range": 1.16711838,
+    "eta": 0.39528206
+   },
+   "beta": -0.2835314,
+   "vecchia_loglik": -10829.47840759,
+   "seconds": 15.797,
+   "skill": {
+    "rmse": 0.65117552,
+    "crps": 0.36759411,
+    "cover90": 0.94
+   },
+   "exact_loglik_at_theta_hat": -10799.097009479101,
+   "gap_below_exact_mle": 0.9202850715046225,
+   "noise_var": 0.5042320849280217,
+   "skill_exact_model_at_theta_hat": {
+    "rmse": 0.6464650662744216,
+    "crps": 0.36361825479185134,
+    "cover90": 0.9333333333333333
+   }
+  }
+ ]
+}

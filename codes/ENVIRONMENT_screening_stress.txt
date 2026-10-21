@@ -1,0 +1,17 @@
+Environment of the committed screening-stress / Vecchia head-to-head run (2026-10-21; codes 24-29, run_screening_stress.sh)
+
+Machine   Apple M3 (8 cores), 16 GB, macOS 27.0.1; dense N = 10,000 references in memory, 3 fields at a time
+Python    3.12.2, numpy 2.4.4 (Apple Accelerate BLAS/LAPACK), scipy 1.17.1
+R         4.5.2 (2025-10-31), GpGp 0.5.1, jsonlite 2.0.0
+Threads   OMP_NUM_THREADS = OPENBLAS_NUM_THREADS = VECLIB_MAXIMUM_THREADS = 3 (stages 27/28; 4 for stages 24-26)
+Seeds     field simulation 20261020 (24), conditional simulations set.seed(20261020) (25), Sobol grid 20261021 (27),
+          max-min orderings set.seed(1..8) in 25, 26, 28, 30, 32 (GpGp's order_maxmin is randomized; values are means over them)
+R pkgs    also Matrix (sparse inverse Cholesky in 32)
+
+Reinstall:  pip install numpy==2.4.4 scipy==1.17.1
+            R -e 'install.packages("remotes"); remotes::install_version("GpGp", "0.5.1"); install.packages("jsonlite")'
+Rerun:      cd codes && ./run_screening_stress.sh ../results/screening_stress_rerun 3
+Check:      python3 29_check_reproduction.py ../results/screening_stress_rerun
+Expected:   quantities at fixed parameters (log-likelihoods at the truth, Vecchia errors, storage) agree to rounding with
+            the same BLAS; optimizer results (MLEs, fit gaps) may move by a few hundredths with another BLAS or thread
+            count. A different BLAS (OpenBLAS, MKL) changes the simulated field only at rounding level.

@@ -1,0 +1,116 @@
+{
+  "fixed_theta": [
+    {
+      "m": 5,
+      "loglik": -402.55485663,
+      "loglik_min": -421.23406281,
+      "loglik_max": -385.52191539,
+      "orderings": 8,
+      "seconds_loglik": 0.096875,
+      "skill": {
+        "rmse": 0.22404223,
+        "crps": 0.12661481,
+        "cover90": 0.92666667
+      }
+    },
+    {
+      "m": 10,
+      "loglik": -11.58322153,
+      "loglik_min": -26.56549699,
+      "loglik_max": 6.476182,
+      "orderings": 8,
+      "seconds_loglik": 0.11425,
+      "skill": {
+        "rmse": 0.21659973,
+        "crps": 0.12160512,
+        "cover90": 0.93666667
+      }
+    },
+    {
+      "m": 20,
+      "loglik": 178.45374586,
+      "loglik_min": 165.82914146,
+      "loglik_max": 191.00163944,
+      "orderings": 8,
+      "seconds_loglik": 0.1965,
+      "skill": {
+        "rmse": 0.20909562,
+        "crps": 0.11801741,
+        "cover90": 0.94
+      }
+    },
+    {
+      "m": 30,
+      "loglik": 219.29549286,
+      "loglik_min": 208.07655369,
+      "loglik_max": 230.0713306,
+      "orderings": 8,
+      "seconds_loglik": 0.286875,
+      "skill": {
+        "rmse": 0.20563514,
+        "crps": 0.11616406,
+        "cover90": 0.94333333
+      }
+    },
+    {
+      "m": 60,
+      "loglik": 245.50069,
+      "loglik_min": 237.65929268,
+      "loglik_max": 254.15022883,
+      "orderings": 8,
+      "seconds_loglik": 0.618125,
+      "skill": {
+        "rmse": 0.20652451,
+        "crps": 0.11654521,
+        "cover90": 0.94333333
+      }
+    },
+    {
+      "m": 120,
+      "loglik": 264.66386256,
+      "loglik_min": 257.90371728,
+      "loglik_max": 268.23218037,
+      "orderings": 8,
+      "seconds_loglik": 1.559875,
+      "skill": {
+        "rmse": 0.20639366,
+        "crps": 0.11635581,
+        "cover90": 0.93333333
+      }
+    }
+  ],
+  "fits": [
+    {
+      "m": 30,
+      "theta_hat": {
+        "sigma2": 2.05955942,
+        "range": 0.38870179,
+        "eta": 0.02440751
+      },
+      "beta": -0.58591043,
+      "vecchia_loglik": 256.2070648,
+      "seconds": 4.283,
+      "skill": {
+        "rmse": 0.20517767,
+        "crps": 0.11587864,
+        "cover90": 0.94333333
+      }
+    },
+    {
+      "m": 60,
+      "theta_hat": {
+        "sigma2": 1.72076258,
+        "range": 0.35131185,
+        "eta": 0.02920341
+      },
+      "beta": -0.40187312,
+      "vecchia_loglik": 261.34575018,
+      "seconds": 9.245,
+      "skill": {
+        "rmse": 0.20619614,
+        "crps": 0.1163786,
+        "cover90": 0.94333333
+      }
+    }
+  ]
+}

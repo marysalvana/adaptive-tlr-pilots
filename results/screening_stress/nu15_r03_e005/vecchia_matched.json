@@ -1,0 +1,28 @@
+{
+  "m_match": 466,
+  "tlr_factor_frac": 0.09339066,
+  "exact_loglik_true": 268.45050824,
+  "runs": [
+    {
+      "m": 250,
+      "stored_frac": 0.05019498,
+      "loglik": 268.78481761,
+      "loglik_err": 0.33430936,
+      "loglik_err_min": -0.56322615,
+      "loglik_err_max": 2.28807937,
+      "orderings": 8,
+      "seconds": 5.206375
+    },
+    {
+      "m": 466,
+      "stored_frac": 0.09339066,
+      "loglik": 268.36344028,
+      "loglik_err": -0.08706796,
+      "loglik_err_min": -0.5652655,
+      "loglik_err_max": 0.41809854,
+      "orderings": 8,
+      "seconds": 15.633,
+      "rmse": 0.20570838
+    }
+  ]
+}
