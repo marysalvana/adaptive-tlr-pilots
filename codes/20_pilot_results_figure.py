@@ -51,7 +51,7 @@ plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 7.5, "axes.edgec
                      "xtick.color": INK, "ytick.color": INK, "axes.labelcolor": INK})
 fig, (a1, a2, a3) = plt.subplots(1, 3, figsize=(6.6, 2.3))
 for ax in (a1, a2, a3):
-    ax.set_xscale("log"); ax.set_xticks(Ns); ax.set_xticklabels([f"{n//1000}k" for n in Ns])
+    ax.set_xscale("log"); ax.set_xticks(Ns); ax.set_xticklabels([("" if n == 60000 else f"{n//1000}k") for n in Ns], fontsize=6.5)
     ax.minorticks_off(); ax.grid(axis="y", color=RULE, lw=0.4, alpha=0.6); ax.set_axisbelow(True)
     ax.spines[["top", "right"]].set_visible(False); ax.set_xlabel("$N$"); ax.set_xlim(Ns[0] / 1.35, Ns[-1] * 1.35)
 a1.set_ylabel("factor stored values, % of dense")
@@ -88,7 +88,7 @@ handles = [Line2D([], [], color=col, marker=mk, ms=4.5, mec="white", mew=0.8, lw
 handles.append(Line2D([], [], color=INK, marker="x", ms=6, mew=1.4, ls="none", label="factorization failed (color = rule)"))
 # third panel: the fitted nugget, head to head
 a3.axhline(0.05, color=GREEN, lw=1.0, ls=(0, (4, 2)), zorder=1)
-a3.text(Ns[-1] * 1.3, 0.05, "truth", color=GREEN, fontsize=6, va="center", ha="right")
+a3.text(Ns[0] / 1.3, 0.0515, "truth", color=GREEN, fontsize=6, va="bottom", ha="left")
 h3 = [Line2D([], [], color=GREEN, lw=1.0, ls=(0, (4, 2)), label="truth")]
 for key, label, col, mk in EST_SERIES:
     xs = [n for n in Ns if (key, n) in est]; ys = [est[(key, n)][2] for n in xs]
