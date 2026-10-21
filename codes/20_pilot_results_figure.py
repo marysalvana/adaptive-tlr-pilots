@@ -36,7 +36,7 @@ for ax in (a1, a2):
     ax.minorticks_off(); ax.grid(axis="y", color=RULE, lw=0.4, alpha=0.6); ax.set_axisbelow(True)
     ax.spines[["top", "right"]].set_visible(False); ax.set_xlabel("$N$")
 a1.set_ylabel("factor stored values, % of dense")
-a2.set_ylabel("log-likelihood error, true parameters")
+a2.set_ylabel("log-likelihood error")
 a2.set_yscale("log")
 for rule, val, label, col, mk in SERIES:
     xs, ys, es, fails = [], [], [], []
@@ -58,12 +58,19 @@ for rule, val, label, col, mk in SERIES:
     if xs:                                                # direct label at the last point
         a1.annotate(label, (xs[-1], ys[-1]), xytext=(4, 0), textcoords="offset points", color=INK, fontsize=6.5, va="center")
 a1.set_ylim(0, 15); a2.set_ylim(0.03, 30)
-a1.text(0.03, 0.04, "$\\times$ factorization failed", transform=a1.transAxes, fontsize=6.5, color=INK)
-a2.text(0.03, 0.04, "$\\times$ factorization failed", transform=a2.transAxes, fontsize=6.5, color=INK)
+# sizes without an exact log-likelihood (no dense factor): say so in the error panel
+no_ref = [n for n in Ns if all(rows.get((r, v, n), {}).get("loglik_err") is None for r, v, _, _, _ in SERIES if rows.get((r, v, n), {}).get("completed"))]
+for n in no_ref:
+    a2.text(n, 0.45, "no dense\nreference", ha="center", va="center", fontsize=6, color=BLUE)
+# one legend for both panels: the three rules and the failure marker (its color is the rule's)
+from matplotlib.lines import Line2D
+handles = [Line2D([], [], color=col, marker=mk, ms=4.5, mec="white", mew=0.8, lw=1.4, label=label) for _, _, label, col, mk in SERIES]
+handles.append(Line2D([], [], color=INK, marker="x", ms=6, mew=1.4, ls="none", label="factorization failed (color = rule)"))
+fig.legend(handles=handles, loc="lower center", ncol=4, frameon=False, fontsize=6.5, bbox_to_anchor=(0.5, -0.02), handletextpad=0.5, columnspacing=1.4)
 for ax in (a1, a2):                                       # dense FP64 fit limit of the wind-gust study on one 80 GB GPU
     ax.axvline(27440, color=INK, lw=0.6, ls=(0, (3, 3)), alpha=0.7)
 a1.text(27440 * 1.06, 14.3, "dense fit limit,\none 80 GB GPU", fontsize=6, color=INK, va="top")
-fig.tight_layout(w_pad=2.0)
+fig.tight_layout(w_pad=2.0, rect=(0, 0.07, 1, 1))
 for ext in ("pdf", "png"):
     fig.savefig(os.path.join(ROOT, "results", f"pilot_results.{ext}"), dpi=300, bbox_inches="tight")
 print("sizes", Ns, "-> overleaf/figures/pilot_results.pdf")
