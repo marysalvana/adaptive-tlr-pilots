@@ -1,3 +1,10 @@
+# Adaptive tile low-rank (TLR) Gaussian process inference: pilot experiments
+
+Small, reproducible experiments on choosing the rank of every covariance tile from a
+condition-dependent error budget rather than a fixed tolerance, with a Vecchia baseline, a
+multi-GPU tile Cholesky, standard errors, and a Metropolis-Hastings run with the adaptive-TLR
+likelihood.  Every script fixes its random seed and writes a JSON file with its settings and
+outputs into `results/`; the logs of the reported runs are in `results/logs/`.
 
 ## 1. Rank rules: fixed tolerance vs. the adaptive budget (`codes/11_tlr_rank_rules.py`)
 
