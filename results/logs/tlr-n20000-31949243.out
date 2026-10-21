@@ -1,0 +1,14 @@
+node=cn525.storrs.hpc.uconn.edu cpus=16 start=Tue Oct 20 19:37:34 EDT 2026
+simulated N=20000 (+300 held out) in 20.7s; tiles b=250, nB=80
+dense: loglik(theta_true)=1123.750, skill={'rmse': 0.22934100317150702, 'crps': 0.12964532778631652, 'cover90': 0.9}
+fixed    0.1     mem=0.017 rank(mean/max)=1.0/2 ||dS||_F/m=6.35e+03 PD=False dloglik=None skill=None (43s)
+fixed    0.01    mem=0.020 rank(mean/max)=1.9/3 ||dS||_F/m=835 PD=False dloglik=None skill=None (41s)
+fixed    0.001   mem=0.025 rank(mean/max)=3.1/6 ||dS||_F/m=75.2 PD=False dloglik=None skill=None (45s)
+fixed    0.0001  mem=0.029 rank(mean/max)=4.2/10 ||dS||_F/m=9.1 PD=True dloglik=-26.146432162095152 skill={'rmse': 0.23039179641686858, 'crps': 0.13018128337043777, 'cover90': 0.8933333333333333} (97s)
+adaptive 0.5     mem=0.038 rank(mean/max)=6.4/27 ||dS||_F/m=0.284 PD=True dloglik=-0.25549183696421096 skill={'rmse': 0.22934118301867054, 'crps': 0.1296450210022896, 'cover90': 0.9} (147s)
+adaptive 0.9     mem=0.036 rank(mean/max)=5.9/24 ||dS||_F/m=0.508 PD=True dloglik=-0.07708365971120656 skill={'rmse': 0.22934200442863772, 'crps': 0.12964696586895344, 'cover90': 0.9} (102s)
+adaptive 0.99    mem=0.035 rank(mean/max)=5.8/23 ||dS||_F/m=0.559 PD=True dloglik=0.09649237370467745 skill={'rmse': 0.22935685036163803, 'crps': 0.12965399669224134, 'cover90': 0.9} (99s)
+MLE dense          theta_hat=[1.3603, 0.3364, 0.0361] evals=89 fail=0 skill={'rmse': 0.22935701649326812, 'crps': 0.12967035465197832, 'cover90': 0.8933333333333333} (1979s)
+MLE adaptive:0.9   theta_hat=[1.3747, 0.3365, 0.0357] evals=92 fail=0 skill={'rmse': 0.2293680225950688, 'crps': 0.1296754830115179, 'cover90': 0.8933333333333333} (24410s)
+saved ../results/preliminary/tlr_rank_rules_n20000.json
+end=Wed Oct 21 03:10:09 EDT 2026

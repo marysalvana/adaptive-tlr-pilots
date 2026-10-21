@@ -90,8 +90,9 @@ form `solve_triangular(L_kk^T, M, left=False)` gave wrong factors on CUDA in PyT
   are not comparable with a TLR Cholesky and should not be read as the method's cost.
 * Metropolis-Hastings pilot: see Section 7 (GPU chains with effective sample sizes); the CPU chain of
   `codes/16_tlr_mcmc_pilot.py` (`results/logs/tlr_mcmc_n5000.log`) mixes too slowly to be compared.
-* N = 20,000 rank-rule run (`results/logs/tlr_n20000.log`): dense MLE (1.3603, 0.3364, 0.0361) in 89 evaluations;
-  the adaptive MLE was still running when this file was written.
+* N = 20,000 rank-rule run (`tlr_rank_rules_n20000.json`, `results/logs/tlr-n20000-31949243.out`, Sigma^TLR assembled densely
+  as in Section 1): dense MLE (1.3603, 0.3364, 0.0361) in 89 evaluations; adaptive tau = 0.9 MLE (1.3747, 0.3365, 0.0357)
+  in 92 evaluations, no failures, within 0.02 dense standard errors, same RMSE/CRPS/coverage.
 
 ## Results added on 2026-10-21
 

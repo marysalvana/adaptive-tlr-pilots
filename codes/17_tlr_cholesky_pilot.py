@@ -199,6 +199,7 @@ def main():
     ap.add_argument("--mle", type=str, default="dense,fixed:1e-4,adaptive:0.9",
                     help="rules fitted by maximum likelihood with the TLR Cholesky likelihood; '' to skip")
     ap.add_argument("--seed", type=int, default=20261020)
+    ap.add_argument("--dense", type=int, default=1, help="1: compute the dense reference (needs N^2 memory); 0: skip it (large N)")
     ap.add_argument("--out", type=str, default="../results/tlr_cholesky")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
@@ -217,15 +218,17 @@ def main():
     out = dict(settings=vars(a), theta_true=theta_true.tolist(), n_tiles=len(bounds),
                dense_factor_values=a.n * (a.n + 1) // 2, rules=[], mle=[])
 
-    # dense reference
-    t0 = time.time()
-    K = rules.cov_full(S, theta_true)
-    ll_dense, cf = rules.loglik_dense(K, y)
-    pr = rules.predict(S, y, Sp, theta_true, "dense", None, bounds)
-    out["dense_loglik_true"] = float(ll_dense); out["dense_seconds"] = time.time() - t0
-    out["dense_skill_true_theta"] = rules.skill(yp, *pr)
-    print(f"dense: loglik(theta_true)={ll_dense:.3f} skill={out['dense_skill_true_theta']} ({time.time()-t0:.0f}s)", flush=True)
-    del K, cf
+    # dense reference (skipped with --dense 0, where N^2 values do not fit)
+    ll_dense = None
+    if a.dense:
+        t0 = time.time()
+        K = rules.cov_full(S, theta_true)
+        ll_dense, cf = rules.loglik_dense(K, y)
+        pr = rules.predict(S, y, Sp, theta_true, "dense", None, bounds)
+        out["dense_loglik_true"] = float(ll_dense); out["dense_seconds"] = time.time() - t0
+        out["dense_skill_true_theta"] = rules.skill(yp, *pr)
+        print(f"dense: loglik(theta_true)={ll_dense:.3f} skill={out['dense_skill_true_theta']} ({time.time()-t0:.0f}s)", flush=True)
+        del K, cf
 
     # rules at the true theta, through the TLR Cholesky
     for spec in [s for s in a.rules.split(",") if s]:
@@ -237,7 +240,8 @@ def main():
         if info["completed"]:
             rec.update(stored_factor=info["stored_factor"], factor_memory_frac=info["stored_factor"] / out["dense_factor_values"],
                        mean_rank_factor=info["mean_rank_factor"], max_rank_factor=info["max_rank_factor"],
-                       loglik_err=ll - ll_dense, skill_true_theta=rules.skill(yp, *tlr_predict(S, y, Sp, theta_true, bounds, fac)))
+                       loglik=ll, loglik_err=None if ll_dense is None else ll - ll_dense,
+                       skill_true_theta=rules.skill(yp, *tlr_predict(S, y, Sp, theta_true, bounds, fac)))
         else:
             rec.update(failed_at_tile=info["failed_at"])
         out["rules"].append(rec)
