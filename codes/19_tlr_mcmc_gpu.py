@@ -3,7 +3,7 @@ nugget, run with the exact (dense) likelihood and with the adaptive-TLR likeliho
 fixed-tolerance TLR likelihood) on the same simulated field, seed, start, and proposal.
 
 Same experiment as 16_tlr_mcmc_pilot.py (same data for the same seed and N), written in the style of
-the mixed-precision-BHM simulation code: PyTorch on one GPU (CPU fallback), the tile SVDs batched
+the companion mixed-precision Bayesian GP code: PyTorch on one GPU (CPU fallback), the tile SVDs batched
 in one call, Cholesky by torch.linalg.cholesky_ex so a failed factorization rejects the proposal,
 a checkpoint every `--ckpt_every` iterations with resume, and per-iteration timing.  Reports
 posterior means, standard deviations, 95% credible intervals, the difference of posterior means in

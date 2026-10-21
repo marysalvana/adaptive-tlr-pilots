@@ -182,7 +182,7 @@ and no tile qualifies for FP8. Outputs: `joint/joint_rank_precision_n{N}.json`.
 ### 7. Metropolis-Hastings on a GPU (`codes/19_tlr_mcmc_gpu.py`, Objective 2)
 
 Random-walk Metropolis-Hastings for (sigma2, range, eta) on the N = 5,000 field of Section 1's design
-(same seed as `16_tlr_mcmc_pilot.py`), written after the mixed-precision-BHM simulation code: PyTorch on
+(same seed as `16_tlr_mcmc_pilot.py`), written after the companion mixed-precision Bayesian GP code: PyTorch on
 one GPU, the tile compression batched (`--svd rand`: randomized range finder with power iterations and
 the tile error verified in FP64, same ranks and log-likelihood as a full SVD), a failed factorization
 rejects the proposal, checkpoints every 100 iterations, effective sample sizes by the initial positive
