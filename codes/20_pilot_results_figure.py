@@ -44,11 +44,14 @@ for rule, val, label, col, mk in SERIES:
         x = rows.get((rule, val, n))
         if x is None: continue
         if x["completed"]:
-            xs.append(n); ys.append(100 * x["factor_memory_frac"]); es.append(abs(x["loglik_err"]))
+            xs.append(n); ys.append(100 * x["factor_memory_frac"])
+            if x.get("loglik_err") is not None:
+                es.append((n, abs(x["loglik_err"])))
         else:
             fails.append(n)
     a1.plot(xs, ys, color=col, lw=1.4, marker=mk, ms=4.5, mec="white", mew=0.8, label=label, zorder=3)
-    a2.plot(xs, es, color=col, lw=1.4, marker=mk, ms=4.5, mec="white", mew=0.8, label=label, zorder=3)
+    if es:
+        a2.plot([e[0] for e in es], [e[1] for e in es], color=col, lw=1.4, marker=mk, ms=4.5, mec="white", mew=0.8, label=label, zorder=3)
     for n in fails:                                       # failed factorization: cross on the axis
         for ax, y in ((a1, 0.5), (a2, 0.05)):
             ax.plot([n], [y], marker="x", color=col, ms=7, mew=1.6, ls="none", zorder=4)

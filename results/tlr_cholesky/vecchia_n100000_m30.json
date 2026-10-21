@@ -1,0 +1,20 @@
+{
+  "N": 100000,
+  "m": 30,
+  "theta_hat": {
+    "sigma2": 0.954093,
+    "range": 0.283561,
+    "eta": 0.052289
+  },
+  "loglik": 6195.426609,
+  "seconds_fit": 23.941,
+  "seconds_predict": 2.749,
+  "peak_memory_mb": 51625731,
+  "skill": {
+    "rmse": 0.22742,
+    "crps": 0.128344,
+    "cover90": 0.903333
+  },
+  "stored_values_vecchia": 3100000,
+  "note": "Vecchia likelihood (GpGp matern15_isotropic, m nearest neighbors, max-min ordering); predictive sd from 200 conditional simulations"
+} 

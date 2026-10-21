@@ -127,7 +127,8 @@ values of the factor relative to a dense factor (N(N+1)/2 values).
   off, predictions equal to dense. N = 60,000: eps = 1e-4 fails; adaptive completes at 3.5% (mean rank 3.3), 0.56 off,
   predictions equal to dense. N = 100,000: a dense factor is not possible with NumPy's LAPACK (matrix beyond 2^31
   entries), so the field is simulated from a tau = 0.02 TLR factor (`--sim tlr --dense 0`, 4.3% of a dense factor) and
-  only completion and storage are reported; result pending when this file was written.
+  only completion and storage are reported: eps = 1e-4 fails to factorize; adaptive completes at 2.9% of a dense factor
+  (mean rank 2.9), predictions RMSE 0.2204 (`tlrchol-n100000-31998652.out`).
 * Figure: `codes/20_pilot_results_figure.py` draws factor storage and log-likelihood error against N with the failed
   tolerances marked (`results/pilot_results.pdf`).
 
@@ -152,8 +153,18 @@ Vecchia (GpGp, `12_vecchia_baseline.R`, data regenerated from the seed), stored 
 | standard, N = 20,000 | 60 | 0.862, 0.288, 0.057 | 17 s | 0.2293 | 0.1298 | 0.897 | 1,220,000 |
 | small nugget, N = 20,000 (dense MLE 1.037, 0.306, 0.0047) | 30 | 1.069, 0.307, 0.0046 | 5 s | 0.0750 | 0.0425 | 0.893 | 620,000 |
 | small nugget, N = 20,000 | 60 | 1.066, 0.309, 0.0046 | 11 s | 0.0750 | 0.0424 | 0.897 | 1,220,000 |
+| standard, N = 40,000 (truth 1, 0.3, 0.05; dense MLE pending) | 30 | 0.515, 0.239, 0.097 | 9 s | 0.2250 | 0.1267 | 0.913 | 1,240,000 |
+| standard, N = 40,000 | 60 | 0.487, 0.231, 0.102 | 25 s | 0.2261 | 0.1272 | 0.907 | 2,440,000 |
+| standard, N = 60,000 (dense MLE pending) | 30 | 0.567, 0.231, 0.089 | 14 s | 0.2130 | 0.1206 | 0.937 | 1,860,000 |
+| standard, N = 60,000 | 60 | 0.832, 0.273, 0.060 | 37 s | 0.2132 | 0.1208 | 0.943 | 3,660,000 |
+| standard, N = 100,000 (TLR-simulated field; no dense) | 30 | 0.954, 0.284, 0.052 | 24 s | 0.2274 | 0.1283 | 0.903 | 3,100,000 |
+| standard, N = 100,000 | 60 | 0.860, 0.272, 0.058 | 95 s | 0.2243 | 0.1264 | 0.900 | 6,100,000 |
 
-Vecchia is fast and predicts well everywhere; its parameter estimates move with the neighbor count
+Vecchia is fast and predicts well everywhere, and at N = 100,000 with 30 neighbors its estimates are close to the
+truth; at N = 40,000 and 60,000 both neighbor counts put the nugget at about twice its true value and the variance at
+about half (the adaptive rule's predictions at those sizes are equally good, RMSE 0.2260 and 0.2111). Head-to-head
+likelihood evaluations at these points (`codes/23_vecchia_headtohead.py`, `vecchia_headtohead_n{N}.json`) were
+pending when this file was written. Its parameter estimates move with the neighbor count
 (sigma2 1.54 and 0.86 at N = 20,000 against the dense 1.36, i.e. 0.2 to 0.9 dense standard errors with
 `pilot_standard_errors_n20000.json`: SEs 0.87, 0.076, 0.023 by finite differences at the dense MLE, whose
 gradient there is not quite zero, so these SEs are approximate), and nothing short of a dense fit says which
