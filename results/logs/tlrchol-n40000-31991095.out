@@ -1,0 +1,7 @@
+node=cn582.storrs.hpc.uconn.edu cpus=32 start=Wed Oct 21 03:06:23 EDT 2026
+simulated N=40000 (+300 held out) in 108.7s; tiles b=250, nB=160
+dense: loglik(theta_true)=2372.668 skill={'rmse': 0.22595041015951647, 'crps': 0.12720771404422265, 'cover90': 0.9066666666666666} (328s)
+fixed    0.0001  completed=False sigma_mem=0.020 factor_mem=None rank(mean/max)=None/None dloglik=None skill=None (477s)
+adaptive 0.9     completed=True sigma_mem=0.026 factor_mem=0.041282092947676305 rank(mean/max)=3.6205188679245284/18 dloglik=-0.6645416067622136 skill={'rmse': 0.2260167740237994, 'crps': 0.1272475650686595, 'cover90': 0.9066666666666666} (249s)
+saved ../results/preliminary/tlr_cholesky/tlr_cholesky_n40000.json
+end=Wed Oct 21 03:25:57 EDT 2026

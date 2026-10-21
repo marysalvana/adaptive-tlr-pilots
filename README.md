@@ -122,6 +122,15 @@ values of the factor relative to a dense factor (N(N+1)/2 values).
   (1.3583, 0.3367, 0.0361), no failures, factor at 6.1%, within 0.01 dense standard errors (SEs 0.87, 0.076,
   0.023 from `pilot_standard_errors_n20000.json`); the same RMSE/CRPS/coverage for all three (0.229 / 0.130 / 0.89).
 
+* Past the dense limit (dense references computed on 514 GB nodes; `tlrchol-n40000-*`, `tlrchol-n60000-*`):
+  N = 40,000: eps = 1e-4 fails to factorize; adaptive completes at 4.1% of the dense factor (mean rank 3.6), 0.66 units
+  off, predictions equal to dense. N = 60,000: eps = 1e-4 fails; adaptive completes at 3.5% (mean rank 3.3), 0.56 off,
+  predictions equal to dense. N = 100,000: a dense factor is not possible with NumPy's LAPACK (matrix beyond 2^31
+  entries), so the field is simulated from a tau = 0.02 TLR factor (`--sim tlr --dense 0`, 4.3% of a dense factor) and
+  only completion and storage are reported; result pending when this file was written.
+* Figure: `codes/20_pilot_results_figure.py` draws factor storage and log-likelihood error against N with the failed
+  tolerances marked (`results/pilot_results.pdf`).
+
 ### 5. Small nugget and the Vecchia baseline priced (`codes/11_tlr_rank_rules.py`, `codes/12_vecchia_baseline.R`)
 
 Same experiment as Section 1 with eta = 0.005 (`small_nugget/`, N = 20,000, true (1, 0.3, 0.005)): fixed

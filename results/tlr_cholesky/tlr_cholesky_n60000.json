@@ -1,0 +1,60 @@
+{
+ "settings": {
+  "n": 60000,
+  "n_pred": 300,
+  "b": 250,
+  "sigma2": 1.0,
+  "range": 0.3,
+  "eta": 0.05,
+  "rules": "fixed:1e-4,adaptive:0.9",
+  "mle": "",
+  "seed": 20261020,
+  "dense": 1,
+  "out": "../results/preliminary/tlr_cholesky"
+ },
+ "theta_true": [
+  1.0,
+  0.3,
+  0.05
+ ],
+ "n_tiles": 240,
+ "dense_factor_values": 1800030000,
+ "rules": [
+  {
+   "rule": "fixed",
+   "value": 0.0001,
+   "completed": false,
+   "stored_sigma": 62276000,
+   "sigma_memory_frac": 0.017298888888888888,
+   "seconds": 396.10956716537476,
+   "failed_at_tile": 30
+  },
+  {
+   "rule": "adaptive",
+   "value": 0.9,
+   "completed": true,
+   "stored_sigma": 83041500,
+   "sigma_memory_frac": 0.023067083333333332,
+   "seconds": 619.103527545929,
+   "stored_factor": 62282500,
+   "factor_memory_frac": 0.03460081220868541,
+   "mean_rank_factor": 3.297245467224547,
+   "max_rank_factor": 17,
+   "loglik": 3583.3187425706783,
+   "loglik_err": -0.5606771875391132,
+   "skill_true_theta": {
+    "rmse": 0.2111436631785882,
+    "crps": 0.11901705772362547,
+    "cover90": 0.93
+   }
+  }
+ ],
+ "mle": [],
+ "dense_loglik_true": 3583.8794197582174,
+ "dense_seconds": 632.2620570659637,
+ "dense_skill_true_theta": {
+  "rmse": 0.2111824358292679,
+  "crps": 0.11903278160319566,
+  "cover90": 0.93
+ }
+}

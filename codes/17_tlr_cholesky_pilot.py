@@ -27,9 +27,26 @@ import numpy as np
 from scipy import optimize
 from scipy.linalg import cholesky, solve_triangular, LinAlgError
 
+SQRT3 = np.sqrt(3.0)
 here = os.path.dirname(os.path.abspath(__file__))
 spec = importlib.util.spec_from_file_location("rules", os.path.join(here, "11_tlr_rank_rules.py"))
 rules = importlib.util.module_from_spec(spec); spec.loader.exec_module(rules)
+
+
+# ------------------------------------------------------------------ low-memory dense covariance
+def cov_full_lowmem(S, theta, block=4000):
+    """Dense covariance built row block by row block in place (one N x N array, no distance copies)."""
+    sigma2, r, eta = theta
+    n = S.shape[0]
+    K = np.empty((n, n))
+    for i0 in range(0, n, block):
+        i1 = min(n, i0 + block)
+        d2 = (S[i0:i1, None, 0] - S[None, :, 0]) ** 2 + (S[i0:i1, None, 1] - S[None, :, 1]) ** 2
+        np.sqrt(d2, out=d2)
+        x = d2; x *= SQRT3 / r
+        K[i0:i1] = sigma2 * ((1.0 + x) * np.exp(-x))
+    K[np.diag_indices_from(K)] += sigma2 * eta
+    return K
 
 
 # ------------------------------------------------------------------ low-rank helpers
@@ -122,6 +139,18 @@ def tlr_cholesky(S, theta, bounds, rule, value):
     return L_diag, L_off, info
 
 
+def tlr_matvec_L(L_diag, L_off, bounds, Z):
+    """Y = L Z for the tile factor (used to simulate a field without a dense factor)."""
+    Y = np.zeros_like(Z)
+    for k, (k0, k1) in enumerate(bounds):
+        Y[k0:k1] = L_diag[k] @ Z[k0:k1]
+        for j, (j0, j1) in enumerate(bounds[:k]):
+            U, V = L_off[(k, j)]
+            if U.shape[1]:
+                Y[k0:k1] += U @ (V.T @ Z[j0:j1])
+    return Y
+
+
 def tlr_forward(L_diag, L_off, bounds, B):
     """Solve L Z = B (B: n x m) by tile forward substitution."""
     Z = np.zeros_like(B)
@@ -200,6 +229,7 @@ def main():
                     help="rules fitted by maximum likelihood with the TLR Cholesky likelihood; '' to skip")
     ap.add_argument("--seed", type=int, default=20261020)
     ap.add_argument("--dense", type=int, default=1, help="1: compute the dense reference (needs N^2 memory); 0: skip it (large N)")
+    ap.add_argument("--sim", type=str, default="dense", choices=["dense", "tlr"], help="simulate the field by a dense Cholesky, or by a tight-budget (tau=0.02) TLR factor when N^2 does not fit")
     ap.add_argument("--out", type=str, default="../results/tlr_cholesky")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
@@ -209,11 +239,28 @@ def main():
     n_tot = a.n + a.n_pred
     S_all = rng.random((n_tot, 2))
     t0 = time.time()
-    L = np.linalg.cholesky(rules.cov_full(S_all, theta_true)); y_all = L @ rng.standard_normal(n_tot); del L
-    perm = rng.permutation(n_tot); obs, hold = perm[:a.n], perm[a.n:]
-    S, y, Sp, yp = S_all[obs], y_all[obs], S_all[hold], y_all[hold]
-    order = rules.morton_order(S); S, y = S[order], y[order]
-    bounds = rules.tile_bounds(a.n, a.b)
+    if a.n > 30000:                                   # large N: in-place builder, same values as rules.cov_full
+        rules.cov_full = cov_full_lowmem
+    if a.sim == "dense":
+        L = np.linalg.cholesky(rules.cov_full(S_all, theta_true)); y_all = L @ rng.standard_normal(n_tot); del L
+        perm = rng.permutation(n_tot); obs, hold = perm[:a.n], perm[a.n:]
+        S, y, Sp, yp = S_all[obs], y_all[obs], S_all[hold], y_all[hold]
+        order = rules.morton_order(S); S, y = S[order], y[order]
+        bounds = rules.tile_bounds(a.n, a.b)
+    else:                                             # field from a tight-budget TLR factor of the true covariance (no dense factor)
+        perm = rng.permutation(n_tot); obs, hold = perm[:a.n], perm[a.n:]
+        S, Sp = S_all[obs], S_all[hold]
+        order = rules.morton_order(S); S = S[order]
+        bounds = rules.tile_bounds(a.n, a.b)
+        Ld, Lo, info = tlr_cholesky(S, theta_true, bounds, "adaptive", 0.02)
+        assert info["completed"], "simulation factor did not complete"
+        z = rng.standard_normal(n_tot)
+        y = tlr_matvec_L(Ld, Lo, bounds, z[:a.n, None])[:, 0]
+        # held-out values: conditional draw given y is not available without a dense factor; use the TLR predictive mean + noise
+        mu_p, sd_p = tlr_predict(S, y, Sp, theta_true, bounds, (Ld, Lo))
+        yp = mu_p + sd_p * z[a.n:]
+        del Ld, Lo
+        print(f"field simulated by a TLR factor (tau=0.02, factor {info['stored_factor']/(a.n*(a.n+1)//2):.3f} of dense)", flush=True)
     print(f"simulated N={a.n} (+{a.n_pred} held out) in {time.time()-t0:.1f}s; tiles b={a.b}, nB={len(bounds)}", flush=True)
     out = dict(settings=vars(a), theta_true=theta_true.tolist(), n_tiles=len(bounds),
                dense_factor_values=a.n * (a.n + 1) // 2, rules=[], mle=[])
