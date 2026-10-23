@@ -25,13 +25,22 @@ SERIES = [("adaptive", 0.9, "adaptive, $\\tau=0.9$", BLUE, "o"),
           ("fixed", 1e-4, "fixed $\\varepsilon=10^{-4}$", VERM, "s"),
           ("fixed", 1e-5, "fixed $\\varepsilon=10^{-5}$", GRAY, "^")]
 
-rows = {}
-for f in sorted(glob.glob(os.path.join(ROOT, "results", "tlr_cholesky", "tlr_cholesky_n*.json"))):
+rows = {}; dense_ll = {}
+for f in sorted(glob.glob(os.path.join(ROOT, "results", "preliminary", "tlr_cholesky", "tlr_cholesky_n*.json"))):
     r = json.load(open(f)); n = r["settings"]["n"]
+    if r.get("dense_loglik_true") is not None: dense_ll[n] = r["dense_loglik_true"]
     for x in r["rules"]:
         rows[(x["rule"], x["value"], n)] = x
+# tolerances 1e-5 and 1e-6 past the dense limit (2026-10-23, codes/17 on the same seed-reproduced fields, --dense 0):
+# results/tlr_cholesky_eps; their log-likelihood error uses the dense value stored with the committed run
+for f in sorted(glob.glob(os.path.join(ROOT, "results", "preliminary", "tlr_cholesky_eps", "tlr_cholesky_n*.json"))):
+    r = json.load(open(f)); n = r["settings"]["n"]
+    for x in r["rules"]:
+        if (x["rule"], x["value"], n) in rows: continue
+        if x.get("loglik_err") is None and x.get("loglik") is not None and n in dense_ll: x["loglik_err"] = x["loglik"] - dense_ll[n]
+        rows[(x["rule"], x["value"], n)] = x
 Ns = sorted({k[2] for k in rows})
-RES = os.path.join(ROOT, "results")
+RES = os.path.join(ROOT, "results", "preliminary")
 est = {}                                                   # (method, N) -> theta_hat
 for f in glob.glob(os.path.join(RES, "tlr_cholesky", "tlr_cholesky_n*.json")):
     r = json.load(open(f)); n = r["settings"]["n"]
@@ -64,7 +73,7 @@ a1.set_title("(a) factor storage"); a1.set_ylabel("% of a dense factor", labelpa
 a2.set_title("(b) likelihood error"); a2.set_ylabel("|log-likelihood error|", labelpad=1); a2.set_yscale("log")
 a3.set_title("(c) vs. Vecchia, $N=10{,}000$")
 
-LBL = {("adaptive", 0.9): "adaptive", ("fixed", 1e-4): "$\\varepsilon=10^{-4}$", ("fixed", 1e-5): "$\\varepsilon=10^{-5}$"}
+LBL = {("adaptive", 0.9): "proposed\nadaptive", ("fixed", 1e-4): "$\\varepsilon=10^{-4}$", ("fixed", 1e-5): "$\\varepsilon=10^{-5}$"}
 for rule, val, label, col, mk in SERIES:
     xs, ys, es, fails = [], [], [], []
     for n in Ns:
@@ -81,7 +90,10 @@ for rule, val, label, col, mk in SERIES:
     for n in fails:
         for ax, y in ((a1, 0.6), (a2, 0.045)):
             ax.plot([n], [y], marker="x", color=col, ms=5.5, mew=1.4, ls="none", zorder=4)
-    if xs:                                                 # direct label left of the first point
+    if xs and rule == "adaptive":                          # two-line label below the curve, clear of the y ticks
+        a1.annotate(LBL[(rule, val)], (xs[1], ys[1]), xytext=(-4, -4), textcoords="offset points", color=col,
+                    fontsize=6.3, va="top", ha="right")
+    elif xs:                                               # direct label left of the first point
         a1.annotate(LBL[(rule, val)], (xs[0], ys[0]), xytext=(-5, 0), textcoords="offset points", color=col,
                     fontsize=6.3, va="center", ha="right")
 a1.set_ylim(0, 15); a1.set_xlim(Ns[0] / 2.6, Ns[-1] * 1.3)
@@ -121,12 +133,12 @@ for i, (key, kt, kv, km) in enumerate(fields):
         a3.plot([km], [yv], marker="D", ms=3.4, color=VEC, mfc="white", mew=0.9, ls="none", zorder=3)
     a3.plot([kt], [yv], marker="o", ms=4.5, color=BLUE, mec="white", mew=0.6, ls="none", zorder=4)
 a3.set_yticks(range(len(fields)))
-a3.set_yticklabels([("pilot  " if (nu, eta, rg) == (1.5, 0.05, 0.3) else "") + f"{NU[nu]}  {rg:g}  {eta:g}" for (nu, eta, rg), _, _, _ in fields][::-1], fontsize=5.6)
+a3.set_yticklabels([("pilot study  " if (nu, eta, rg) == (1.5, 0.05, 0.3) else "") + f"{NU[nu]}  {rg:g}  {eta:g}" for (nu, eta, rg), _, _, _ in fields][::-1], fontsize=5.6)
 a3.set_ylim(-4.4, len(fields) - 0.3)
 a3.set_xscale("log"); a3.set_xlim(0.02, 400); a3.set_xticks([0.1, 1, 10, 100]); a3.set_xticklabels(["0.1", "1", "10", "100"], fontsize=6.5)
 a3.minorticks_off(); a3.grid(axis="x", color=RULE, lw=0.4, alpha=0.6); a3.grid(axis="y", visible=False)
 a3.set_xlabel("KL divergence (0 = exact)", labelpad=1); a3.set_ylabel("")
-a3.text(0.97, 0.03, "rows: smoothness $\\nu$, range, nugget\nblue: adaptive TLR\ngreen: grouped Vecchia, $m=30$ (filled),\n$m=60$ (open); ungrouped Vecchia at\nthe same storage as TLR (diamond)",
+a3.text(0.97, 0.03, "rows: smoothness $\\nu$, range, nugget\nblue: proposed adaptive TLR\ngreen: grouped Vecchia, $m=30$ (filled),\n$m=60$ (open); ungrouped Vecchia at\nthe same storage as TLR (diamond)",
         transform=a3.transAxes, fontsize=5.4, ha="right", va="bottom", color=INK, linespacing=1.15)
 for ext in ("pdf", "png"):
     fig.savefig(os.path.join(os.environ.get("FIG_OUT", os.path.join(ROOT, "results")), f"pilot_results.{ext}"), dpi=300, bbox_inches="tight", pad_inches=0.02)

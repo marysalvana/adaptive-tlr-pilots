@@ -227,7 +227,10 @@ def main():
     ap.add_argument("--prop_cov", type=str, default=None, help=".npy 3x3 covariance of log(theta) from a pilot chain; proposal = scale * chol(cov) N(0,I) with scale tuned in burn-in from 2.38/sqrt(3)")
     ap.add_argument("--svd", type=str, default="fp32", choices=["fp32", "fp64", "rand"], help="rank decision from an FP32 SVD with FP64 projection and verified error, a full FP64 SVD, or a randomized range finder (k=--rand_k, batched matmuls, exact fallback) with verified error")
     ap.add_argument("--out", type=str, default="../results/mcmc_gpu")
+    ap.add_argument("--chain_seed", type=int, default=None, help="seed of the chain's proposals and starting jitter (default --seed + 1); the data seed is --seed")
+    ap.add_argument("--start_mult", type=str, default="1.3,0.8,1.5", help="starting value as multipliers of theta_true (dispersed starts for several chains)")
     a = ap.parse_args()
+    a.chain_seed = a.seed + 1 if a.chain_seed is None else a.chain_seed
     os.makedirs(a.out, exist_ok=True)
     log = lambda m: print(m, flush=True)
     dev = torch.device(a.device)
@@ -249,7 +252,7 @@ def main():
     log(f"loglik(theta_true): dense {ll0:.3f} in {t_dense:.2f}s; adaptive 0.9 {ll1:.3f} in {t_ad:.2f}s "
         f"(stored {lik.last['stored']/(a.n*a.n):.3f} of dense)")
 
-    start = np.log(theta_true * np.array([1.3, 0.8, 1.5]))
+    start = np.log(theta_true * np.array([float(v) for v in a.start_mult.split(",")]))
     prop_chol = None; scale0 = 0.08
     if a.prop_cov:
         prop_chol = np.linalg.cholesky(np.load(a.prop_cov)); scale0 = 2.38 / np.sqrt(3)
@@ -264,7 +267,7 @@ def main():
             log(f"{name}: already complete, skipping"); continue
         ckpt = os.path.join(a.out, f"ckpt_n{a.n}_{name}.npz")
         try:
-            chain, lls, acc, fail, scale, sec = run_chain(lik, rule, value, start, a.iters, a.burn, a.seed + 1, ckpt, log,
+            chain, lls, acc, fail, scale, sec = run_chain(lik, rule, value, start, a.iters, a.burn, a.chain_seed, ckpt, log,
                                                           scale0=scale0, ckpt_every=a.ckpt_every, prop_chol=prop_chol)
         except AssertionError as e:                       # the rule cannot even start: indefinite at the start state
             out["chains"][name] = dict(rule=rule, value=value, complete=True, could_not_start=True, reason=str(e),

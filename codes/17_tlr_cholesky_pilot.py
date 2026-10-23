@@ -24,6 +24,7 @@ Reproducible: fixed seeds; settings recorded in the JSON output.
 """
 import argparse, json, os, time, importlib.util
 import numpy as np
+from scipy.linalg import svd as scipy_svd
 from scipy import optimize
 from scipy.linalg import cholesky, solve_triangular, LinAlgError
 
@@ -52,7 +53,10 @@ def cov_full_lowmem(S, theta, block=4000):
 # ------------------------------------------------------------------ low-rank helpers
 def truncate_svd(T, rule, thr_rel, thr_abs):
     """Rank-r truncation of a small dense tile by the rule; returns (U, V) with T ~ U V^T."""
-    U, s, Vt = np.linalg.svd(T, full_matrices=False)
+    try:
+        U, s, Vt = np.linalg.svd(T, full_matrices=False)
+    except np.linalg.LinAlgError:                     # gesdd failed to converge (2026-10-23, N = 100,000 at 1e-6): robust gesvd driver
+        U, s, Vt = scipy_svd(T, full_matrices=False, lapack_driver="gesvd")
     tail = np.append(np.sqrt(np.cumsum(s[::-1] ** 2)[::-1]), 0.0)
     thr = thr_rel * np.sqrt((s ** 2).sum()) if rule == "fixed" else thr_abs
     r = int(np.argmax(tail <= thr))
@@ -66,7 +70,10 @@ def recompress(U, V, rule, thr_rel, thr_abs):
     Qu, Ru = np.linalg.qr(U)
     Qv, Rv = np.linalg.qr(V)
     W = Ru @ Rv.T                                    # k x k core
-    Uw, s, Vwt = np.linalg.svd(W)
+    try:
+        Uw, s, Vwt = np.linalg.svd(W)
+    except np.linalg.LinAlgError:
+        Uw, s, Vwt = scipy_svd(W, lapack_driver="gesvd")
     tail = np.append(np.sqrt(np.cumsum(s[::-1] ** 2)[::-1]), 0.0)
     thr = thr_rel * np.sqrt((s ** 2).sum()) if rule == "fixed" else thr_abs
     r = int(np.argmax(tail <= thr))

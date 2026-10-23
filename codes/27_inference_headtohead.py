@@ -157,14 +157,16 @@ def stage_fitorders(a, d):
     """Score the Vecchia fits of 30_vecchia_fit_orderings.R (one per seeded ordering) on the exact likelihood."""
     out, st, S, y, bounds = load(d)
     res = json.load(open(os.path.join(d, "inference.json"))); l_best = res["exact_mle"]["loglik"]
-    rows = json.load(open(os.path.join(d, "vecchia_fit_orderings.json")))
+    fo_name = a.fo_file or "vecchia_fit_orderings.json"           # 34_vecchia_fit_meanzero.R writes vecchia_fit_orderings_meanzero.json
+    key_suffix = "" if fo_name == "vecchia_fit_orderings.json" else "_meanzero"
+    rows = json.load(open(os.path.join(d, fo_name)))
     summ = {}
     for r in rows:
         th = [r["theta_hat"]["sigma2"], r["theta_hat"]["range"], r["theta_hat"]["eta"]]
         le = ll_exact(S, y, th); r["exact_loglik"] = le; r["gap_below_exact_mle"] = None if le is None else l_best - le
         summ.setdefault(r["m"], []).append(r["gap_below_exact_mle"])
-    res["vecchia_fit_orderings"] = rows
-    res["vecchia_fit_gap_over_orderings"] = {str(m): dict(mean=float(np.mean(g)), min=float(min(g)), max=float(max(g)), orderings=len(g))
+    res["vecchia_fit_orderings" + key_suffix] = rows
+    res["vecchia_fit_gap_over_orderings" + key_suffix] = {str(m): dict(mean=float(np.mean(g)), min=float(min(g)), max=float(max(g)), orderings=len(g))
                                              for m, g in summ.items()}
     json.dump(res, open(os.path.join(d, "inference.json"), "w"), indent=1)
     print(f"[{a.tag}] Vecchia fit gap over orderings: " + ", ".join(f"m={m} mean {np.mean(g):.2f} min {min(g):.2f} max {max(g):.2f}"
@@ -192,6 +194,7 @@ def main():
     ap.add_argument("--tag", default=None)
     ap.add_argument("--grid", type=int, default=32)
     ap.add_argument("--out", type=str, default="../results/screening_stress")
+    ap.add_argument("--fo_file", type=str, default=None, help="fitorders: Vecchia fit file to score (default vecchia_fit_orderings.json; 34 writes vecchia_fit_orderings_meanzero.json)")
     a = ap.parse_args()
     if a.stage == "report":
         return stage_report(a)

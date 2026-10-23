@@ -26,6 +26,7 @@ import numpy as np
 from scipy import optimize
 from scipy.special import erf
 from scipy.linalg import cho_factor, cho_solve, LinAlgError
+from scipy.linalg import svd as scipy_svd
 
 SQRT3 = np.sqrt(3.0)
 
@@ -84,7 +85,10 @@ def truncate_tiles(K, bounds, rule, value, m_theta):
     for i, (i0, i1) in enumerate(bounds):
         for j, (j0, j1) in enumerate(bounds[:i]):
             T = K[i0:i1, j0:j1]
-            U, s, Vt = np.linalg.svd(T, full_matrices=False)
+            try:
+                U, s, Vt = np.linalg.svd(T, full_matrices=False)
+            except np.linalg.LinAlgError:                       # gesdd failed to converge on this tile (2026-10-23, small-nugget 1e-6 MLE): use the robust gesvd driver
+                U, s, Vt = scipy_svd(T, full_matrices=False, lapack_driver="gesvd")
             tail = np.sqrt(np.cumsum(s[::-1] ** 2)[::-1])        # tail[r] = ||T - T_r||_F for rank r
             tail = np.append(tail, 0.0)
             if rule == "fixed":

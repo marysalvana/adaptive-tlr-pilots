@@ -23,8 +23,8 @@ definiteness (Cholesky success), log-likelihood error at the true parameters,
 maximum-likelihood estimates of (sigma2, range, eta) with ranks re-chosen at every
 parameter value, and RMSE / CRPS / 90% coverage at 300 held-out sites.
 
-    cd codes && python3 11_tlr_rank_rules.py --n 10000 --out ../results/preliminary
-    cd codes && python3 11_tlr_rank_rules.py --n 20000 --mle "dense,adaptive:0.9" --out ../results/preliminary
+    cd codes && python3 11_tlr_rank_rules.py --n 10000 --out ../results
+    cd codes && python3 11_tlr_rank_rules.py --n 20000 --mle "dense,adaptive:0.9" --out ../results
 
 Outputs: `tlr_rank_rules_n{N}.json`, `sim_n{N}_obs.csv`, `sim_n{N}_holdout.csv`, `results/logs/`.
 
@@ -33,7 +33,7 @@ Outputs: `tlr_rank_rules_n{N}.json`, `sim_n{N}_obs.csv`, `sim_n{N}_holdout.csv`,
 Fits the same simulated data by Vecchia's approximation with m = 30 nearest neighbors
 (GpGp `matern15_isotropic`, max-min ordering) and predicts the same held-out sites.
 
-    cd codes && Rscript 12_vecchia_baseline.R 10000 30 ../results/preliminary
+    cd codes && Rscript 12_vecchia_baseline.R 10000 30 ../results
 
 Output: `vecchia_n{N}_m{m}.json`.
 
@@ -88,7 +88,7 @@ form `solve_triangular(L_kk^T, M, left=False)` gave wrong factors on CUDA in PyT
 * Timing caveat for experiment 1: Sigma^TLR is assembled densely and factorized exactly, so
   the wall times of the rank rules (ranks re-chosen at every evaluation, SVD of every tile)
   are not comparable with a TLR Cholesky and should not be read as the method's cost.
-* Metropolis-Hastings pilot: see Section 7 (GPU chains with effective sample sizes); the CPU chain of
+* Metropolis-Hastings pilot: see Section 7 (GPU chains with effective sample sizes) and Section 11 (four chains per likelihood); the CPU chain of
   `codes/16_tlr_mcmc_pilot.py` (`results/logs/tlr_mcmc_n5000.log`) mixes too slowly to be compared.
 * N = 20,000 rank-rule run (`tlr_rank_rules_n20000.json`, `results/logs/tlr-n20000-31949243.out`, Sigma^TLR assembled densely
   as in Section 1): dense MLE (1.3603, 0.3364, 0.0361) in 89 evaluations; adaptive tau = 0.9 MLE (1.3747, 0.3365, 0.0357)
@@ -140,7 +140,9 @@ eps = 1e-3 and 1e-4 give an indefinite Sigma^TLR; eps = 1e-5 is definite at 3.5%
 adaptive tau = 0.9 is definite at 4.4% (mean rank 8.0), 0.38 off. Maximum likelihood: dense (1.0366, 0.3058, 0.0047) in
 164 evaluations, RMSE 0.0746; eps = 1e-4 (1.5033, 0.1694, 0.0123) with 27 failed factorizations, RMSE 0.1395
 (wrong estimates and double the prediction error); eps = 1e-5 (1.1501, 0.3224, 0.0043), one failure, RMSE 0.0747;
-adaptive tau = 0.9 (1.3614, 0.3352, 0.0036), no failures, RMSE 0.0746. The dense and adaptive estimates lie on the
+adaptive tau = 0.9 (1.3614, 0.3352, 0.0036), no failures, RMSE 0.0746; eps = 1e-6 (added 2026-10-23, `small_nugget_eps6/`,
+`codes/11` with the gesvd fallback after a non-converging tile SVD stopped the first run): (1.3541, 0.3333, 0.0036), no failures,
+RMSE 0.0746, i.e. the same fit as the adaptive rule at the same storage (4.3% against 4.4%), 105 evaluations in 2.0 h. The dense and adaptive estimates lie on the
 same ridge of the likelihood: the identifiable ratio sigma2 / range^3 (Zhang 2004) is 36.2 for dense, 36.1 for
 adaptive, 34.3 for eps = 1e-5, and 309 for eps = 1e-4.
 
@@ -270,7 +272,7 @@ adaptive-TLR MLE and the Vecchia fits (fit_model, 8 orderings, `30_vecchia_fit_o
 log-likelihood they lose. The adaptive-TLR MLE lost at most 0.36 units (under 0.1 on eight fields); the Vecchia fits lost
 up to 8.2 units on average over orderings and up to 20.7 for a single ordering, worst at long range and high smoothness.
 
-| field (nu, range, nugget) | verified exact MLE (sigma2, range, nugget) | adaptive-TLR fit: exact log-lik lost | Vecchia m = 30 fits: mean (min to max) over 8 orderings | Vecchia m = 60 fits | grouped Vecchia KL m = 30 / 60 |
+| field (nu, range, nugget) | verified exact MLE (sigma2, range, nugget) | adaptive-TLR fit: exact log-lik lost | Vecchia m = 30 fits WITH INTERCEPT (fit_model default): mean (min to max) over 8 orderings | Vecchia m = 60 fits with intercept | grouped Vecchia KL m = 30 / 60 |
 |---|---|---|---|---|---|
 | 3/2, 0.3, 0.05 | (1.711, 0.348, 0.0293) | 0.02 | 0.47 (0.05 to 1.00) | 0.07 (0.01 to 0.22) | 28.4 / 7.6 |
 | 3/2, 1, 0.05 | (1.626, 1.136, 0.0310) | 0.07 | 0.85 (0.34 to 1.63) | 0.55 (0.02 to 2.07) | 56.8 / 15.5 |
@@ -285,7 +287,44 @@ up to 8.2 units on average over orderings and up to 20.7 for a single ordering, 
 Grouped Vecchia (`fit_model`'s default, `group = TRUE`), the variant the fits use, has no exposed inverse factor, so its KL
 divergence is estimated by Monte Carlo (`33_kl_vecchia_grouped_mc.R`: KL = E[log p - log q] over 40 draws from the exact
 model, 4 orderings, `kl_vecchia_grouped_mc.json`); on the same draws the ungrouped Monte Carlo estimate matches the exact
-ungrouped KL of 32 within 1-2% on every field. Grouping roughly halves the KL (8 to 95 with 30 or 60 neighbors) and panel (c) of the results figure plots the grouped values; the equal-storage point stays ungrouped (exact).
+ungrouped KL of 32 within 1-2% on every field. Grouping roughly halves the KL (8 to 95 with 30 or 60 neighbors) and Figure
+2(c) plots the grouped values; the equal-storage point stays ungrouped (exact).
+
+### 8a. Zero-mean Vecchia fits (added 2026-10-23; `codes/34_vecchia_fit_meanzero.R`)
+
+A later check found a model mismatch in the fit table above: GpGp's `fit_model` profiles out an intercept (the design
+matrix `X = 1` in `12_vecchia_baseline.R`, `25_vecchia_stress.R` and `30_vecchia_fit_orderings.R`), while the exact and
+adaptive-TLR fits of `24`/`27` are zero-mean, and the Vecchia covariance estimates were scored on the zero-mean exact
+likelihood. The fitted intercepts were not negligible on the long-range fields (0.87 and 0.91 at range 3), so part of the
+loss in the table above is the fitted mean, not the approximation. Script 34 fits the same zero-mean model by Vecchia's
+approximation with GpGp's own ingredients (`order_maxmin` under `set.seed(1..8)`, `find_ordered_nn`, `group_obs`, and
+`vecchia_grouped_meanzero_loglik` maximized over log(sigma2, range, nugget) by restarted Nelder-Mead with a BFGS polish,
+started from `get_start_parms`); `27_inference_headtohead.py fitorders --fo_file vecchia_fit_orderings_meanzero.json`
+scores each fit on the exact likelihood (key `vecchia_fit_gap_over_orderings_meanzero` in `inference.json`). The
+fixed-parameter results (KL divergences, likelihood ladders, matched-storage points, panel (c) of the results figure) are zero-mean on both
+sides and are unaffected.
+
+Exact log-likelihood lost below the verified exact MLE, mean (min to max) over the 8 orderings:
+
+| field (nu, range, nugget) | adaptive-TLR fit | zero-mean Vecchia m = 30 | zero-mean Vecchia m = 60 | intercept fits, for comparison (m = 30 / 60 means) |
+|---|---|---|---|---|
+| 3/2, 0.3, 0.05 | 0.02 | 0.16 (0.01 to 0.34) | 0.07 (0.00 to 0.17) | 0.47 / 0.07 |
+| 3/2, 1, 0.05 | 0.07 | 0.77 (0.01 to 2.45) | 0.31 (0.01 to 0.66) | 0.85 / 0.55 |
+| 3/2, 3, 0.05 | 0.07 | 3.27 (0.04 to 8.49) | 0.32 (0.01 to 1.88) | 4.76 / 2.18 |
+| 3/2, 0.3, 0.5 | 0.01 | 0.36 (0.04 to 1.42) | 0.10 (0.00 to 0.39) | 0.39 / 0.26 |
+| 5/2, 0.3, 0.05 | 0.00 | 0.17 (0.01 to 0.70) | 0.22 (0.04 to 0.56) | 0.43 / 0.34 |
+| 5/2, 1, 0.05 | 0.05 | 1.27 (0.26 to 3.29) | 0.60 (0.07 to 1.55) | 1.60 / 1.34 |
+| 5/2, 3, 0.05 | 0.36 | 3.33 (0.22 to 7.90) | 0.47 (0.12 to 1.30) | 8.20 / 3.60 |
+| 5/2, 1, 0.5 | 0.03 | 5.40 (0.08 to 16.45) | 2.64 (0.12 to 8.16) | 1.74 / 4.49 |
+| 5/2, 1, 1 | 0.06 | 5.65 (0.04 to 18.32) | 1.73 (0.45 to 2.96) | 3.52 / 3.25 |
+
+On the pilot field the zero-mean Vecchia fits lose 0.16 (m = 30) and 0.07 (m = 60) units (the intercept fits gave 0.47
+and 0.07). Across the nine fields the adaptive-TLR fit loses at
+most 0.36 units and the zero-mean Vecchia fits with 30 neighbors lose 0.16 to 5.7 on average, most on the long-range
+(range 3) and noisy (relative nugget 0.5 and 1) fields; for the noisy fields Katzfuss and Guinness (2021) recommend the
+sparse general Vecchia form rather than the standard (response) form run here, and the single-ordering maxima (up to 18
+units) include optimizer stops on the flat sigma2-range ridge, so the means over orderings are the numbers to read. The
+Vecchia fits again predict as well as the dense fit on every field.
 
 Rerun everything (about 45 min per field on an 8-core laptop, 3 fields at a time; environment, seeds and versions in
 `codes/ENVIRONMENT_screening_stress.txt`):
@@ -301,3 +340,90 @@ Verified on 2026-10-21: the smoke test runs clean from the committed code, and r
 pilot field reproduced every committed number exactly. The checker compares every quoted number with the committed one: quantities at fixed parameters (fields, log-likelihoods
 and KL at the truth) should agree to rounding with the same BLAS; optimizer results (MLEs, fit losses) can move by a few
 hundredths with another BLAS or thread count.
+
+### 9. Tolerances 1e-5 and 1e-6 past the dense limit (added 2026-10-23; `codes/17_tlr_cholesky_pilot.py`, `tlr_cholesky_eps/`)
+
+Section 4 ran only eps = 1e-4 against the adaptive rule at N = 40,000 and beyond. This section asks what the tighter
+tolerances do there. The fields of Section 4 are reproduced from their seeds (`--dense 0`, no dense factor), the rules
+fixed 1e-5, fixed 1e-6 and adaptive tau = 0.9 are run at the true parameters, and the log-likelihood error is taken against
+the dense value stored with the Section 4 run (`dense_loglik_true`), which `codes/20_pilot_results_figure.py` merges into
+panels (a) and (b) of the results figure. At N = 100,000 the field is the tau = 0.02 TLR simulation of Section 4 and only completion, storage
+and predictions are reported. `codes/17` now falls back to `gesvd` when the default tile SVD does not converge (the first
+100,000-point run crashed in the 1e-6 pass).
+
+    sbatch --job-name=tlrchol-eps-n40000 storrs_cpu_big.sbatch "17_tlr_cholesky_pilot.py --n 40000 --dense 0 --rules fixed:1e-5,fixed:1e-6,adaptive:0.9 --mle '' --out ../results/tlr_cholesky_eps"
+
+| N | rule | completed | factor / dense factor | mean rank (max) | log-lik error | RMSE / CRPS / 90% cover | seconds |
+|---|---|---|---|---|---|---|---|
+| 40,000 | fixed 1e-5 | yes | 7.4% | 7.7 (20) | -1.56 | 0.2260 / 0.1272 / 0.907 | 275 |
+| 40,000 | fixed 1e-6 | yes | 8.8% | 9.5 (28) | +0.18 | 0.2259 / 0.1272 / 0.907 | 317 |
+| 40,000 | adaptive 0.9 | yes | 4.1% | 3.6 (18) | -0.66 | 0.2260 / 0.1272 / 0.907 | 231 |
+| 60,000 | fixed 1e-5 | yes | 6.6% | 7.2 (19) | -2.63 | 0.2111 / 0.1190 / 0.93 | 15,050 |
+| 60,000 | fixed 1e-6 | yes | 8.0% | 9.0 (26) | -0.35 | 0.2112 / 0.1190 / 0.93 | 937 |
+| 60,000 | adaptive 0.9 | yes | 3.5% | 3.3 (17) | -0.56 | 0.2111 / 0.1190 / 0.93 | 892 |
+| 100,000 | fixed 1e-5 | yes | 5.7% | - | no dense reference | 0.2204 | - |
+| 100,000 | adaptive 0.9 (Section 4) | yes | 2.9% | 2.9 | no dense reference | 0.2204 | - |
+
+Both tolerances complete where 1e-4 fails, with 1.8 to 2.0 (1e-5) and 2.1 to 2.3 (1e-6) times the storage of the
+adaptive factor and the same predictions. The 1e-5 factor's log-likelihood error grows with N (-1.56, -2.63), the
+adaptive factor's does not (-0.66, -0.56).
+The 1e-6 run at N = 100,000 (`tlr_cholesky_eps6/`, job `tlrchol-eps6-n100000`) is pending. Outputs:
+`tlr_cholesky_eps/tlr_cholesky_n{N}.json`, `results/logs/tlrchol-eps-n{N}-*.out`.
+
+### 10. One budget on rank and storage precision at ranges 0.1 and 1.0 (added 2026-10-23; `codes/18_joint_rank_precision_pilot.py`, `joint_range0.1/`, `joint_range1.0/`)
+
+Section 6 (range 0.3) found no tile that qualified for FP16 or FP8 and no difference between the joint choice and rank
+first, then precision. The same pilot at range 0.1 (rougher field, higher ranks) and range 1.0 (smoother field), N = 10,000
+and 20,000, sigma2 = 1, eta = 0.05, tau = 0.9, assembled matrix, is reported here.
+
+    sbatch --job-name=joint_range0.1 storrs_cpu.sbatch "18_joint_rank_precision_pilot.py --n 10000 --range 0.1 --out ../results/joint_range0.1"
+
+| range | N | rule | off-diagonal bytes / dense FP64 | bytes / rank only | precision mix (tiles FP8 / FP16 / FP32 / FP64) | budget met | PD | log-lik error |
+|---|---|---|---|---|---|---|---|---|
+| 0.1 | 10,000 | fixed 1e-4, FP64 | 6.1% | 1.07 | 0 / 0 / 0 / 780 | no | yes | -0.69 |
+| 0.1 | 10,000 | rank only, FP64 | 5.7% | 1.00 | 0 / 0 / 0 / 780 | yes | yes | +0.17 |
+| 0.1 | 10,000 | rank then precision | 2.5% | 0.441 | 88 / 348 / 326 / 18 | yes | yes | +0.17 |
+| 0.1 | 10,000 | joint | 2.5% | 0.434 | 89 / 379 / 294 / 18 | yes | yes | +0.10 |
+| 0.1 | 20,000 | fixed 1e-4, FP64 | 4.5% | 1.03 | 0 / 0 / 0 / 3,160 | no | yes | +0.47 |
+| 0.1 | 20,000 | rank only, FP64 | 4.4% | 1.00 | 0 / 0 / 0 / 3,160 | yes | yes | -0.03 |
+| 0.1 | 20,000 | rank then precision | 1.9% | 0.441 | 396 / 1,257 / 1,419 / 88 | yes | yes | -0.02 |
+| 0.1 | 20,000 | joint | 1.9% | 0.439 | 396 / 1,324 / 1,352 / 88 | yes | yes | -0.03 |
+| 1.0 | 10,000 | fixed 1e-4, FP64 | 2.8% | 0.69 | 0 / 0 / 0 / 780 | no | no | - |
+| 1.0 | 10,000 | rank only, FP64 | 4.0% | 1.00 | 0 / 0 / 0 / 780 | yes | yes | +0.32 |
+| 1.0 | 10,000 | rank then precision | 2.0% | 0.500 | 0 / 0 / 780 / 0 | yes | yes | +0.32 |
+| 1.0 | 10,000 | joint | 2.0% | 0.500 | 0 / 0 / 780 / 0 | yes | yes | +0.32 |
+| 1.0 | 20,000 | fixed 1e-4, FP64 | 2.5% | 0.70 | 0 / 0 / 0 / 3,160 | no | no | - |
+| 1.0 | 20,000 | rank only, FP64 | 3.6% | 1.00 | 0 / 0 / 0 / 3,160 | yes | yes | -0.29 |
+| 1.0 | 20,000 | rank then precision | 1.8% | 0.500 | 0 / 0 / 3,160 / 0 | yes | yes | -0.29 |
+| 1.0 | 20,000 | joint | 1.8% | 0.500 | 0 / 0 / 3,160 / 0 | yes | yes | -0.29 |
+
+At range 0.1, 11% of the tiles qualify for FP8 and 42 to 49% for FP16, and the joint choice stores 0.434 and 0.439 of the
+rank-only bytes against 0.441 for rank first, then precision, with the same log-likelihood and predictions (RMSE 0.2192
+and 0.2397 for every rule that met the budget). At range 1.0 every tile meets the budget in FP32, both orders give exactly
+half the rank-only bytes, and the fixed tolerance 1e-4 leaves the assembled matrix indefinite at both sizes. Outputs:
+`joint_range{0.1,1.0}/joint_rank_precision_n{N}.json`, `results/logs/joint-r{0.1,1.0}-n{N}-*.out`.
+
+### 11. Four chains per likelihood (added 2026-10-23; `codes/19_tlr_mcmc_gpu.py --chain_seed/--start_mult`, `codes/35_mcmc_multichain_diagnostics.py`)
+
+Section 7 reported one chain per likelihood; this section adds three more. Chain 1 is the Section 7 chain (`mcmc_long/`, chain seed 20261021, start
+1.3, 0.8, 1.5 times theta_true); chains 2-4 (`mcmc_multi/<rule>/c{2,3,4}/`, chain seeds 102-104) start from
+(0.6, 1.4, 0.5), (2.0, 0.5, 2.0) and (0.8, 1.2, 0.8) times theta_true, with the same data, flat priors on log theta over
+the box [0.1, 10] x [0.02, 2] x [0.001, 1], proposal covariance `prop_logcov_n5000.npy` scaled by 2.38/sqrt(3) and
+tuned in burn-in, 20,000 iterations with 2,000 burn-in, one A30 or A100 per chain (adaptive chains 0.23 s per iteration).
+Script 35 pools the four chains per likelihood on the natural scale and reports rank-normalized split R-hat and bulk
+effective sample size (Vehtari et al. 2021), the Monte Carlo standard error of each mean, and the differences from the
+pooled exact chains in exact posterior standard deviations (`mcmc_multi/multichain_diagnostics_n5000.json`).
+
+| likelihood | posterior mean (sigma2, range, eta) | posterior SD | max split R-hat | bulk ESS | mean diff. in exact SD | SD ratio | failed factorizations per chain |
+|---|---|---|---|---|---|---|---|
+| exact | 1.445, 0.343, 0.0430 | 0.846, 0.062, 0.0181 | 1.004 | 2317, 2470, 2320 | - | - | 0, 0, 0, 0 |
+| adaptive TLR (tau = 0.9) | 1.433, 0.341, 0.0432 | 0.838, 0.061, 0.0179 | 1.003 | 2311, 2479, 2312 | -0.01, -0.03, +0.01 | 0.99, 0.99, 0.99 | 0, 0, 0, 0 |
+| fixed tolerance 1e-4 | 1.142, 0.322, 0.0472 | 0.303, 0.031, 0.0130 | 1.001 | 3594, 4376, 3591 | -0.36, -0.33, +0.23 | 0.36, 0.50, 0.72 | 47, 33, 50, 76 |
+
+The pooled exact posterior has a heavier sigma2 tail than chain 1 alone (SD 0.85 against 0.75; chain SDs 0.75, 0.82,
+0.80, 0.99), which is why a single chain could not resolve the adaptive chain's 0.85 SD ratio of Section 7: with four
+chains the adaptive-TLR posterior matches the exact one to 0.03 SD in the means (within one Monte Carlo standard error)
+and to 1% in the standard deviations. The fixed 1e-4 posterior is shifted by 0.23 to 0.36 SD (10 to 17 Monte Carlo
+standard errors), narrowed to 0.36 to 0.72 of the exact SD, and truncated by 206 rejected factorizations in 80,000
+proposals (1e-3 cannot start). Held-out RMSE and CRPS at the posterior means are 0.234 and 0.132 for every chain; the 90%
+coverage is 0.937 for the exact and adaptive chains and 0.917 to 0.920 for the fixed-tolerance chains.
