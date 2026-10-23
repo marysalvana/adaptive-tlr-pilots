@@ -372,8 +372,8 @@ The 1e-6 run at N = 100,000 (`tlr_cholesky_eps6/`, job `tlrchol-eps6-n100000`) i
 
 ### 10. One budget on rank and storage precision at ranges 0.1 and 1.0 (added 2026-10-23; `codes/18_joint_rank_precision_pilot.py`, `joint_range0.1/`, `joint_range1.0/`)
 
-Section 6 (range 0.3) found no tile that qualified for FP16 or FP8 and no difference between the joint choice and rank
-first, then precision. The same pilot at range 0.1 (rougher field, higher ranks) and range 1.0 (smoother field), N = 10,000
+Section 6 (range 0.3) found at most three tiles that qualified for FP16, none for FP8, and no difference between the joint
+choice and rank first, then precision. The same pilot at range 0.1 (rougher field, higher ranks) and range 1.0 (smoother field), N = 10,000
 and 20,000, sigma2 = 1, eta = 0.05, tau = 0.9, assembled matrix, is reported here.
 
     sbatch --job-name=joint_range0.1 storrs_cpu.sbatch "18_joint_rank_precision_pilot.py --n 10000 --range 0.1 --out ../results/joint_range0.1"
@@ -397,7 +397,7 @@ and 20,000, sigma2 = 1, eta = 0.05, tau = 0.9, assembled matrix, is reported her
 | 1.0 | 20,000 | rank then precision | 1.8% | 0.500 | 0 / 0 / 3,160 / 0 | yes | yes | -0.29 |
 | 1.0 | 20,000 | joint | 1.8% | 0.500 | 0 / 0 / 3,160 / 0 | yes | yes | -0.29 |
 
-At range 0.1, 11% of the tiles qualify for FP8 and 42 to 49% for FP16, and the joint choice stores 0.434 and 0.439 of the
+At range 0.1, 11 to 13% of the tiles qualify for FP8 and 42 to 49% for FP16, and the joint choice stores 0.434 and 0.439 of the
 rank-only bytes against 0.441 for rank first, then precision, with the same log-likelihood and predictions (RMSE 0.2192
 and 0.2397 for every rule that met the budget). At range 1.0 every tile meets the budget in FP32, both orders give exactly
 half the rank-only bytes, and the fixed tolerance 1e-4 leaves the assembled matrix indefinite at both sizes. Outputs:
