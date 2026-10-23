@@ -1,0 +1,7 @@
+node=cn610.storrs.hpc.uconn.edu cpus=32 start=Fri Oct 23 09:54:45 EDT 2026
+simulated N=60000 (+300 held out) in 264.7s; tiles b=250, nB=240
+fixed    1e-05   completed=True sigma_mem=0.020 factor_mem=0.06597001161091759 rank(mean/max)=7.2348675034867505/19 dloglik=None skill={'rmse': 0.21113099422267811, 'crps': 0.11900552280501292, 'cover90': 0.93} (15050s)
+fixed    1e-06   completed=True sigma_mem=0.025 factor_mem=0.07988727965645016 rank(mean/max)=8.981834030683403/26 dloglik=None skill={'rmse': 0.21117411057048432, 'crps': 0.11902937136237446, 'cover90': 0.93} (937s)
+adaptive 0.9     completed=True sigma_mem=0.023 factor_mem=0.03460081220868541 rank(mean/max)=3.297245467224547/17 dloglik=None skill={'rmse': 0.2111436631785846, 'crps': 0.11901705772362518, 'cover90': 0.93} (892s)
+saved ../results/preliminary/tlr_cholesky_eps/tlr_cholesky_n60000.json
+end=Fri Oct 23 14:41:30 EDT 2026

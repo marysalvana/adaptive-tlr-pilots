@@ -1,0 +1,10 @@
+node=cn474.storrs.hpc.uconn.edu cpus=16 start=Fri Oct 23 09:03:51 EDT 2026
+simulated N=20000; tiles b=250, nB=80; e_max=5.625e-04
+per-tile choices in 60s
+fixed                bytes=0.0250 of dense | mix={8: 0, 16: 0, 32: 0, 64: 3160} | rank(mean/max)=3.1/4 | budget met=False PD=False dloglik=None skill=None (18s)
+rank_only            bytes=0.0357 of dense | mix={8: 0, 16: 0, 32: 0, 64: 3160} | rank(mean/max)=4.5/11 | budget met=True PD=True dloglik=-0.2901238882841426 skill={'rmse': 0.2261071786072468, 'crps': 0.12801125944361463, 'cover90': 0.9066666666666666} (21s)
+rank_then_precision  bytes=0.0178 of dense | mix={8: 0, 16: 0, 32: 3160, 64: 0} | rank(mean/max)=4.5/11 | budget met=True PD=True dloglik=-0.28621439865310094 skill={'rmse': 0.2261068577563056, 'crps': 0.12801106356231218, 'cover90': 0.9066666666666666} (21s)
+joint                bytes=0.0178 of dense | mix={8: 0, 16: 0, 32: 3160, 64: 0} | rank(mean/max)=4.5/11 | budget met=True PD=True dloglik=-0.28621439865310094 skill={'rmse': 0.2261068577563056, 'crps': 0.12801106356231218, 'cover90': 0.9066666666666666} (21s)
+joint / rank-only bytes = 0.5 | rank-then-precision / rank-only = 0.5
+saved ../results/preliminary/joint_range1.0/joint_rank_precision_n20000.json
+end=Fri Oct 23 09:06:57 EDT 2026
