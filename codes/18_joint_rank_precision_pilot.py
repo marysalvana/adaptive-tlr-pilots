@@ -140,8 +140,15 @@ def main():
     ap.add_argument("--tau", type=float, default=0.9)
     ap.add_argument("--eps", type=float, default=1e-4, help="fixed tolerance of the current-practice row")
     ap.add_argument("--seed", type=int, default=20261020)
+    ap.add_argument("--nu", type=float, default=1.5, choices=[1.5, 2.5], help="Matern smoothness (2026-10-23: 2.5 added for the regime sweep)")
     ap.add_argument("--out", type=str, default="../results/joint")
     a = ap.parse_args()
+    if a.nu == 2.5:                                   # closed-form Matern 5/2 in place of the module's 3/2, everywhere in this run
+        SQRT5 = np.sqrt(5.0)
+        def matern52(h, r):
+            x = SQRT5 * h / r
+            return (1.0 + x + x * x / 3.0) * np.exp(-x)
+        rules.matern32 = matern52
     os.makedirs(a.out, exist_ok=True)
 
     rng = np.random.default_rng(a.seed)

@@ -1,0 +1,89 @@
+{
+ "settings": {
+  "n": 20000,
+  "b": 500,
+  "tau": 0.9,
+  "eps": 0.0001,
+  "seed": 20261020,
+  "out": "../results/preliminary/joint_windgust"
+ },
+ "parameters": {
+  "r_s": 19.7246432,
+  "r_t": 3.6102287,
+  "eta": 0.92818591,
+  "sigma2": 2.06869252
+ },
+ "m_theta": 1.920131249186393,
+ "e_max": 0.043202953106693844,
+ "dense_offdiag_bytes": 1560000000,
+ "rules": {
+  "fixed": {
+   "offdiag_bytes": 294368000,
+   "offdiag_bytes_frac_of_dense": 0.1886974358974359,
+   "precision_mix_tiles": {
+    "8": 0,
+    "16": 0,
+    "32": 0,
+    "64": 780
+   },
+   "mean_rank": 47.174358974358974,
+   "max_rank": 176,
+   "max_tile_err": 0.0011026236249248515,
+   "budget_met_all_tiles": true,
+   "pd": true,
+   "seconds": 6.216057062149048,
+   "bytes_frac_of_rank_only": 8.153334810547308
+  },
+  "rank_only": {
+   "offdiag_bytes": 36104000,
+   "offdiag_bytes_frac_of_dense": 0.023143589743589744,
+   "precision_mix_tiles": {
+    "8": 0,
+    "16": 0,
+    "32": 0,
+    "64": 780
+   },
+   "mean_rank": 5.785897435897436,
+   "max_rank": 99,
+   "max_tile_err": 0.0431114257348011,
+   "budget_met_all_tiles": true,
+   "pd": true,
+   "seconds": 5.9765119552612305,
+   "bytes_frac_of_rank_only": 1.0
+  },
+  "rank_then_precision": {
+   "offdiag_bytes": 8830000,
+   "offdiag_bytes_frac_of_dense": 0.00566025641025641,
+   "precision_mix_tiles": {
+    "8": 53,
+    "16": 124,
+    "32": 0,
+    "64": 603
+   },
+   "mean_rank": 5.785897435897436,
+   "max_rank": 99,
+   "max_tile_err": 0.04311183220585138,
+   "budget_met_all_tiles": true,
+   "pd": true,
+   "seconds": 6.164973020553589,
+   "bytes_frac_of_rank_only": 0.24457123864391758
+  },
+  "joint": {
+   "offdiag_bytes": 8739000,
+   "offdiag_bytes_frac_of_dense": 0.005601923076923077,
+   "precision_mix_tiles": {
+    "8": 69,
+    "16": 108,
+    "32": 0,
+    "64": 603
+   },
+   "mean_rank": 5.826923076923077,
+   "max_rank": 99,
+   "max_tile_err": 0.04311071472511021,
+   "budget_met_all_tiles": true,
+   "pd": true,
+   "seconds": 6.165167331695557,
+   "bytes_frac_of_rank_only": 0.24205074230002216
+  }
+ }
+}

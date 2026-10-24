@@ -1,0 +1,47 @@
+Environment and reproduction of the round-10 pilot runs (2026-10-23; codes 36, 37, 38, 39, 18 --nu, joint_sweep*.sh)
+README sections: README.md 12 (bound terms), 13 (joint rule regimes and wind gusts), 14 and 15 (Obj. 2 chains and the total variation bound).
+
+Machines  Storrs HPC (UConn), general partition, AMD EPYC 7402P 24-core nodes, RHEL 9.6; storrs_cpu.sbatch (64 GB, 16-32
+          cores), storrs_cpu_big.sbatch (200 GB, 32 cores), storrs_cpu_huge.sbatch (440 GB), storrs_cpu4.sbatch (4 cores,
+          24 GB, one chain each). Local checks: Apple M3 (8 cores), 16 GB, macOS 27.0.1.
+Python    Storrs: 3.12.13 (miniconda env tlr), numpy 2.4.3 (bundled OpenBLAS), scipy 1.17.1, pandas 3.0.1, torch 2.5.1+cu121
+          (GPU chains of section 11 only). Mac: 3.12.2, numpy 2.4.4 (Apple Accelerate), scipy 1.17.1, pandas 2.2.3.
+Reinstall pip install numpy==2.4.3 scipy==1.17.1 pandas==3.0.1   (torch only for 19_tlr_mcmc_gpu.py)
+Threads   OMP_NUM_THREADS = MKL_NUM_THREADS = OPENBLAS_NUM_THREADS = SLURM_CPUS_PER_TASK (set by the sbatch templates).
+Seeds     every script: data seed 20261020 (field or wind-gust subset, same generator call order as 17/18/19, so the fields
+          of sections 4, 6, 7 are regenerated exactly); 38: --chain_seed 101..104 with --start_mult 1.3,0.8,1.5 / 0.6,1.4,0.5 /
+          2.0,0.5,2.0 / 0.8,1.2,0.8 (same dispersed starts as section 11); 37 reads the exact chain of section 7
+          (results/mcmc_long/dense/mcmc_n5000_dense_chain.npy, committed) and thins it to --draws.
+Inputs    data/windgust_train_data.csv (35 MB; copy of hpc4ees/data/train_data.csv, the SC26 wind-gust station-hours with
+          WRF predictors, Jahan et al. 2025; 39 reads it by default, override with GUST_CSV=...). The SC26 fitted
+          parameters are hard-coded in 39 (par_mp of hpc4ees codes/results/app2_forecast_skill.npz).
+
+Rerun (from codes/, Storrs; each line is one job; outputs under results/):
+  for n in 10000 20000 40000; do sbatch --job-name=bound-terms-n$n storrs_cpu_big.sbatch "36_likelihood_error_terms.py --n $n --rules adaptive:0.9,adaptive:0.5,fixed:1e-4,fixed:1e-5 --out ../results/bound_terms"; done
+  sbatch --job-name=posterior-osc-n5000 storrs_cpu.sbatch "37_posterior_oscillation.py --n 5000 --draws 500 --rules adaptive:0.9,fixed:1e-4 --out ../results/posterior_oscillation"
+  k=1; for cfg in "101 1.3,0.8,1.5" "102 0.6,1.4,0.5" "103 2.0,0.5,2.0" "104 0.8,1.2,0.8"; do set -- $cfg; for rule in dense adaptive:0.9 fixed:1e-4; do tag=${rule//:/_}; sbatch --requeue --job-name=mcmc-tc-$tag-c$k storrs_cpu4.sbatch "38_tlr_cholesky_mcmc.py --n 5000 --rule $rule --iters 10000 --burn 2000 --chain_seed $1 --start_mult $2 --out ../results/mcmc_tlrchol/$tag/c$k"; done; k=$((k+1)); done
+  python3 38_tlr_cholesky_mcmc.py --pool --out ../results/mcmc_tlrchol        # after the 12 chains: split R-hat, ESS, pooled summaries
+  for r in 0.3 0.1; do sbatch --job-name=joint-r$r-n40000 storrs_cpu_big.sbatch "18_joint_rank_precision_pilot.py --n 40000 --range $r --out ../results/joint_range$r"; sbatch --job-name=joint-r$r-n60000 storrs_cpu_huge.sbatch "18_joint_rank_precision_pilot.py --n 60000 --range $r --out ../results/joint_range$r"; done
+  sbatch --job-name=joint-sweep  --cpus-per-task=16 --mem=64G --time=08:00:00 --output=../results/logs/%x-%j.out --wrap="cd $PWD && export OMP_NUM_THREADS=16 && bash joint_sweep.sh"
+  sbatch --job-name=joint-sweep2 --cpus-per-task=16 --mem=64G --time=08:00:00 --output=../results/logs/%x-%j.out --wrap="cd $PWD && export OMP_NUM_THREADS=16 && bash joint_sweep2.sh"
+  for n in 10000 20000 40000; do for b in 250 500; do sbatch --job-name=gust-joint-n$n-b$b storrs_cpu_big.sbatch "39_joint_windgust.py --n $n --b $b --out ../results/joint_windgust"; done; done
+  (36 at 40,000 needs about 70 GB and 25 minutes; 38 runs 3-5 s per iteration per chain on 4 cores, about 10 hours per
+   chain, and resumes from ckpt_n5000.npz if resubmitted; 37 takes about 75 s per draw at N = 5,000; the wind-gust runs
+   take 4 to 40 minutes.)
+
+Expected (committed JSONs; quantities at fixed parameters agree to rounding with the same BLAS, optimizer and MCMC
+          outputs move at the level of their Monte Carlo error):
+  bound_terms_n{10000,20000,40000}.json, adaptive 0.9: error -0.252 / -0.077 / +0.274, first-order term -0.216 / -0.039 /
+          +0.304, remainder bound (logdet + quadratic) 0.118 / 0.115 / 0.101, eta-route bound 515 / 1,109 / 2,234.
+  joint_windgust_n{10000,20000,40000}_b250.json: joint / rank-only 0.225 / 0.241 / 0.239, rank-then-precision / rank-only
+          0.236 / 0.249 / 0.303; fixed 1e-4 28.5 / 25.5 / 22.4 % of dense.
+  joint_sweep/b500_eta0.2_r0.05: joint 0.392, rank-then-precision 0.444 (margin 11.7%); every range >= 1 row: 0.5 = 0.5.
+  posterior_oscillation_n5000.json and mcmc_tlrchol/pooled_n5000.json: see README section 14 when written.
+
+Smoke (about 5 minutes on the Mac; checks that every script runs end to end from the committed code into an empty folder;
+          its numbers are for N = 1,000-2,000, not the committed ones):
+          cd codes && ./run_round10_smoke.sh <empty dir>
+          Verified 2026-10-23 on the Mac: 36 at N = 2000 adaptive 0.9: error +0.6515 = T1 +0.6898 + remainder -0.0383;
+          37 at N = 1000, 5 draws: adaptive assembled range [0.128, 0.340]; 38 two chains per rule at N = 1000, 120
+          iterations, 0 failures, pooled R-hat 1.9-2.9 (far too short to converge, by design); 18 --nu 2.5 range 1.0:
+          0.5 = 0.5; 39 at N = 2000: rank-only 2.09% of dense, fixed 26.3%, joint = rank-then-precision = 0.125 of rank-only.

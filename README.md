@@ -362,12 +362,15 @@ and predictions are reported. `codes/17` now falls back to `gesvd` when the defa
 | 60,000 | fixed 1e-6 | yes | 8.0% | 9.0 (26) | -0.35 | 0.2112 / 0.1190 / 0.93 | 937 |
 | 60,000 | adaptive 0.9 | yes | 3.5% | 3.3 (17) | -0.56 | 0.2111 / 0.1190 / 0.93 | 892 |
 | 100,000 | fixed 1e-5 | yes | 5.7% | - | no dense reference | 0.2204 | - |
+| 100,000 | fixed 1e-6 | yes | 7.0% | 8.1 (23) | no dense reference | 0.2204 / 0.1242 / 0.91 | 19419 |
 | 100,000 | adaptive 0.9 (Section 4) | yes | 2.9% | 2.9 | no dense reference | 0.2204 | - |
 
-Both tolerances complete where 1e-4 fails, with 1.8 to 2.0 (1e-5) and 2.1 to 2.3 (1e-6) times the storage of the
-adaptive factor and the same predictions. The 1e-5 factor's log-likelihood error grows with N (-1.56, -2.63), the
+Both tolerances complete where 1e-4 fails, with 1.8 to 2.0 (1e-5) and 2.1 to 2.4 (1e-6) times the storage of the
+adaptive factor and the same predictions; at N = 100,000 the 1e-6 factorization took 5.4 hours on 32 cores against
+45 minutes for the adaptive factor. The 1e-5 factor's log-likelihood error grows with N (-1.56, -2.63), the
 adaptive factor's does not (-0.66, -0.56).
-The 1e-6 run at N = 100,000 (`tlr_cholesky_eps6/`, job `tlrchol-eps6-n100000`) is pending. Outputs:
+The 1e-6 run at N = 100,000 ran separately after the gesvd fallback (`tlr_cholesky_eps6/`, job `tlrchol-eps6-n100000`)
+and its entry is merged into `tlr_cholesky_eps/tlr_cholesky_n100000.json`. Outputs:
 `tlr_cholesky_eps/tlr_cholesky_n{N}.json`, `results/logs/tlrchol-eps-n{N}-*.out`.
 
 ### 10. One budget on rank and storage precision at ranges 0.1 and 1.0 (added 2026-10-23; `codes/18_joint_rank_precision_pilot.py`, `joint_range0.1/`, `joint_range1.0/`)
@@ -427,3 +430,202 @@ and to 1% in the standard deviations. The fixed 1e-4 posterior is shifted by 0.2
 standard errors), narrowed to 0.36 to 0.72 of the exact SD, and truncated by 206 rejected factorizations in 80,000
 proposals (1e-3 cannot start). Held-out RMSE and CRPS at the posterior means are 0.234 and 0.132 for every chain; the 90%
 coverage is 0.937 for the exact and adaptive chains and 0.917 to 0.920 for the fixed-tolerance chains.
+
+### 12. The log-likelihood error as a first-order term plus a certified remainder (added 2026-10-23; `codes/36_likelihood_error_terms.py`, `bound_terms/`)
+
+The Objective 1 bound in hand grows with N (the eta route gives epsilon_ell = O(N tau)). This section measures what the
+error is made of. With Delta = Sigma^TLR - Sigma (assembled, true parameters, same fields as section 4), alpha =
+Sigma^{-1} y, z = L^{-1} y and E = L^{-1} Delta L^{-T}, the error ell^TLR - ell is split into the first-order term
+T1 = -tr(Sigma^{-1} Delta)/2 + alpha^T Delta alpha / 2 and a remainder. The remainder is bounded without any factor N:
+the log-determinant part by ||E||_F^2 / (4 (1 - ||E||_2)) and the quadratic form by ||E z||^2 / (2 (1 - ||E||_2)) with
+||E z||^2 = (Delta alpha)^T Sigma^{-1} (Delta alpha). T1, ||E||_F, ||E||_2 and ||E z|| are all computable from the TLR
+factor and the truncation residuals (Hutchinson estimates with TLR solves), so the pair (T1, remainder bound) is an a
+posteriori certificate of the likelihood error at TLR cost. The eta-route column is the uniform bound
+[N (-log(1 - eta)) + eta ||z||^2 / (1 - eta)] / 2 with eta = ||E||_2 (actual) and with eta_hat = sqrt(2 sum e_ij^2) /
+m(theta) (what the rule guarantees a priori; "-" where eta_hat >= 1 and the bound is void); the "T1 tile bound" column is
+the tile-by-tile Cauchy-Schwarz bound sum_{i>j} (||(Sigma^{-1})_{ij}||_F + ||alpha_i|| ||alpha_j||) e_ij on the
+first-order term.
+
+    sbatch --job-name=bound-terms-n40000 storrs_cpu_big.sbatch "36_likelihood_error_terms.py --n 40000 --rules adaptive:0.9,adaptive:0.5,fixed:1e-4,fixed:1e-5 --out ../results/bound_terms"
+
+| N | rule | stored | error | first-order T1 | remainder | remainder bound | spectral norm of E | T1 tile bound | eta route (actual / a priori) |
+|---|---|---|---|---|---|---|---|---|---|
+| 10,000 | adaptive tau = 0.9 | 5.3% | -0.252 | -0.216 | -0.036 | 0.118 | 0.049 | 2,449 | 515 / 10,826 |
+| 10,000 | adaptive tau = 0.5 | 5.5% | -0.064 | -0.053 | -0.011 | 0.036 | 0.027 | 1,341 | 275 / 4,108 |
+| 10,000 | fixed eps = 0.0001 | 4.5% | -0.891 | +1.789 | -2.680 | 13.793 | 0.398 | 16,910 | 5,879 / - |
+| 10,000 | fixed eps = 1e-05 | 5.4% | -0.436 | -0.391 | -0.045 | 0.142 | 0.038 | 1,867 | 397 / 10,012 |
+| 20,000 | adaptive tau = 0.9 | 3.6% | -0.077 | -0.039 | -0.038 | 0.115 | 0.054 | 4,189 | 1,109 / 17,242 |
+| 20,000 | adaptive tau = 0.5 | 3.8% | -0.255 | -0.245 | -0.011 | 0.035 | 0.029 | 2,358 | 581 / 7,242 |
+| 20,000 | fixed eps = 0.0001 | 2.9% | -26.146 | -5.533 | -20.613 | 212.297 | 0.857 | 55,171 | 78,144 / - |
+| 20,000 | fixed eps = 1e-05 | 3.5% | +0.568 | +0.743 | -0.175 | 0.548 | 0.072 | 6,586 | 1,519 / - |
+| 40,000 | adaptive tau = 0.9 | 2.6% | +0.274 | +0.304 | -0.030 | 0.101 | 0.054 | 7,228 | 2,233 / 28,476 |
+| 40,000 | adaptive tau = 0.5 | 2.8% | +0.175 | +0.185 | -0.010 | 0.033 | 0.031 | 4,198 | 1,280 / 12,949 |
+| 40,000 | fixed eps = 0.0001 | 2.0% | not positive definite | | | | | | |
+| 40,000 | fixed eps = 1e-05 | 2.4% | -0.506 | +0.021 | -0.527 | 2.059 | 0.169 | 22,226 | 7,749 / - |
+
+For the adaptive rule the remainder bound is 0.10 to 0.12 at every N for tau = 0.9 and 0.02 to 0.04 for tau = 0.5, while
+the eta-route bound grows from 515 to 2,234 (actual eta) and from 10,826 to 28,476 (a priori). The tile-by-tile
+Cauchy-Schwarz bound on the first-order term is useless (thousands): the cancellation inside tr(Sigma^{-1} Delta) is what
+makes the error small, so Task 2 of Objective 1 is to compute the first-order term from the truncation residuals and to
+bound the remainder, not to bound the first-order term tile by tile. The fixed tolerances do not: the tolerance 1e-4
+lets the spectral norm of E reach 0.40 and 0.86, so its remainder is 2.7 and 20.6 units with certificates of 13.8 and 212
+(the assembled-matrix errors of -0.9 and -26.1 differ from the TLR Cholesky with recompression of section 4, -2.6 and
+10.9 at the same N, which is a different object), and at N = 40,000 it does not give a positive definite assembled matrix;
+1e-5 keeps the certificate at 0.14 to 2.1. The adaptive budget is what keeps ||E||_2 near 0.05 and the certificate near
+0.1 at every N. Outputs:
+`bound_terms/bound_terms_n{N}.json`, `results/logs/bound-terms-n{N}-*.out`.
+
+### 13. When the joint rank-and-precision choice pays: regime sweep, larger N, and the wind-gust covariance (added 2026-10-23; `codes/18` with `--nu`, `codes/joint_sweep.sh`, `codes/joint_sweep2.sh`, `codes/39_joint_windgust.py`; `joint_sweep/`, `joint_range0.3/`, `joint_range0.1/`, `joint_windgust/`)
+
+Sections 6 and 10 found the joint choice of rank and storage precision only 0 to 1.6% below "rank first, then the lowest
+precision that fits" on Matern fields at nugget 0.05. This section asks where the joint choice pays. The per-tile budget is
+e_max = tau b m(theta) / N with m(theta) = sigma2 eta; a tile can trade one extra rank column (a factor (r+1)/r in bytes)
+for one precision level (a factor 1/2) only when its norm sits just above a rounding threshold at its minimal rank.
+
+**Regime sweep at N = 10,000** (`joint_sweep/<tag>/joint_rank_precision_n10000.json`; "margin" = 1 - joint bytes / rank-then-precision bytes; the FP8/FP16 shares are the joint rule's; "fixed PD" = whether the fixed tolerance 1e-4 gave a positive definite assembled matrix). The nugget 0.5 and 1.0 rows are mechanism checks only; residual fields of scientific interest have relative nuggets of 0.05 to 0.2.
+
+| nu | tile b | nugget | range | joint / rank-only | rank-then-precision / rank-only | margin | FP8 / FP16 share | mean rank | fixed PD |
+|---|---|---|---|---|---|---|---|---|---|
+| 1.5 | 250 | 0.05 | 0.05 | 0.434 | 0.441 | 1.4% | 18% / 22% | 5.7 | yes |
+| 1.5 | 250 | 0.05 | 0.1 | 0.434 | 0.441 | 1.5% | 11% / 49% | 7.1 | yes |
+| 1.5 | 250 | 0.05 | 0.3 | 0.500 | 0.500 | 0.0% | 0% / 0% | 7.1 | yes |
+| 1.5 | 250 | 0.05 | 1.0 | 0.500 | 0.500 | 0.0% | 0% / 0% | 5.0 | no |
+| 1.5 | 250 | 0.05 | 3.0 | 0.500 | 0.500 | 0.0% | 0% / 0% | 3.5 | no |
+| 1.5 | 250 | 0.2 | 0.05 | 0.398 | 0.418 | 4.8% | 19% / 24% | 4.5 | yes |
+| 1.5 | 250 | 0.2 | 0.1 | 0.405 | 0.414 | 2.0% | 18% / 50% | 5.6 | yes |
+| 1.5 | 250 | 0.2 | 0.3 | 0.484 | 0.485 | 0.2% | 0% / 11% | 5.8 | yes |
+| 1.5 | 250 | 0.2 | 1.0 | 0.500 | 0.500 | 0.0% | 0% / 0% | 4.2 | yes |
+| 1.5 | 250 | 0.2 | 3.0 | 0.500 | 0.500 | 0.0% | 0% / 0% | 3.1 | yes |
+| 1.5 | 250 | 0.5 | 0.05 | 0.315 | 0.377 | 16.4% | 17% / 30% | 3.8 | yes |
+| 1.5 | 250 | 0.5 | 0.1 | 0.356 | 0.378 | 5.8% | 23% / 54% | 4.7 | yes |
+| 1.5 | 250 | 0.5 | 0.3 | 0.437 | 0.440 | 0.7% | 0% / 37% | 5.0 | yes |
+| 1.5 | 250 | 1.0 | 0.05 | 0.247 | 0.327 | 24.5% | 12% / 32% | 3.1 | yes |
+| 1.5 | 250 | 1.0 | 0.1 | 0.293 | 0.333 | 11.9% | 25% / 59% | 4.1 | yes |
+| 1.5 | 250 | 1.0 | 0.3 | 0.379 | 0.389 | 2.7% | 0% / 64% | 4.5 | yes |
+| 1.5 | 500 | 0.05 | 0.05 | 0.459 | 0.462 | 0.8% | 22% / 21% | 10.2 | yes |
+| 1.5 | 500 | 0.05 | 0.1 | 0.456 | 0.460 | 0.9% | 9% / 43% | 11.1 | yes |
+| 1.5 | 500 | 0.05 | 0.3 | 0.499 | 0.499 | 0.0% | 0% / 1% | 9.7 | yes |
+| 1.5 | 500 | 0.05 | 1.0 | 0.500 | 0.500 | 0.0% | 0% / 0% | 6.6 | no |
+| 1.5 | 500 | 0.05 | 3.0 | 0.500 | 0.500 | 0.0% | 0% / 0% | 4.1 | no |
+| 1.5 | 500 | 0.2 | 0.05 | 0.392 | 0.444 | 11.7% | 19% / 34% | 8.3 | yes |
+| 1.5 | 500 | 0.2 | 0.1 | 0.424 | 0.429 | 1.1% | 14% / 52% | 8.6 | yes |
+| 1.5 | 500 | 0.2 | 0.3 | 0.490 | 0.491 | 0.1% | 0% / 8% | 7.7 | yes |
+| 1.5 | 500 | 0.2 | 1.0 | 0.500 | 0.500 | 0.0% | 0% / 0% | 5.1 | yes |
+| 1.5 | 500 | 0.2 | 3.0 | 0.500 | 0.500 | 0.0% | 0% / 0% | 3.5 | yes |
+| 1.5 | 500 | 0.5 | 0.05 | 0.254 | 0.394 | 35.5% | 18% / 40% | 6.7 | yes |
+| 1.5 | 500 | 0.5 | 0.1 | 0.368 | 0.402 | 8.5% | 21% / 58% | 7.2 | yes |
+| 1.5 | 500 | 0.5 | 0.3 | 0.448 | 0.456 | 1.8% | 0% / 35% | 6.6 | yes |
+| 1.5 | 500 | 1.0 | 0.05 | 0.245 | 0.294 | 16.6% | 16% / 34% | 5.5 | yes |
+| 1.5 | 500 | 1.0 | 0.1 | 0.258 | 0.354 | 27.0% | 22% / 69% | 6.3 | yes |
+| 1.5 | 500 | 1.0 | 0.3 | 0.391 | 0.410 | 4.6% | 0% / 63% | 5.8 | yes |
+| 2.5 | 250 | 0.05 | 0.3 | 0.499 | 0.499 | 0.0% | 0% / 1% | 6.8 | no |
+| 2.5 | 250 | 0.05 | 1.0 | 0.500 | 0.500 | 0.0% | 0% / 0% | 4.8 | no |
+| 2.5 | 250 | 0.05 | 3.0 | 0.500 | 0.500 | 0.0% | 0% / 0% | 3.1 | yes |
+| 2.5 | 250 | 0.2 | 0.3 | 0.480 | 0.482 | 0.4% | 0% / 13% | 5.6 | yes |
+| 2.5 | 250 | 0.2 | 1.0 | 0.500 | 0.500 | 0.0% | 0% / 0% | 3.9 | no |
+| 2.5 | 250 | 0.2 | 3.0 | 0.500 | 0.500 | 0.0% | 0% / 0% | 3.0 | yes |
+| 2.5 | 500 | 0.05 | 0.3 | 0.499 | 0.499 | 0.0% | 0% / 1% | 8.8 | yes |
+| 2.5 | 500 | 0.05 | 1.0 | 0.500 | 0.500 | 0.0% | 0% / 0% | 5.9 | no |
+| 2.5 | 500 | 0.05 | 3.0 | 0.500 | 0.500 | 0.0% | 0% / 0% | 3.5 | no |
+| 2.5 | 500 | 0.2 | 0.3 | 0.487 | 0.490 | 0.6% | 0% / 11% | 7.3 | yes |
+| 2.5 | 500 | 0.2 | 1.0 | 0.500 | 0.500 | 0.0% | 0% / 0% | 4.8 | no |
+| 2.5 | 500 | 0.2 | 3.0 | 0.500 | 0.500 | 0.0% | 0% / 0% | 3.1 | yes |
+
+Strong dependence (range 1 and 3, or nu = 2.5): the far-field tiles are low-rank (mean rank 3 to 5) but their norms stay of
+order sigma2 b, so no format below FP32 meets the budget, the joint rule reduces to the sequential one (margin 0) and the
+fixed tolerance 1e-4 is not positive definite at nugget 0.05. Weak dependence (range 0.05 to 0.1): tiles are small in norm,
+FP8 and FP16 qualify, and the margin reaches 4.8% (tile 250) and 11.7% (tile 500) at nugget 0.2, range 0.05.
+
+**Larger N on the Matern field** (range 0.3 and 0.1, nugget 0.05, tile 250; sections 6 and 10 hold N = 10,000 and 20,000):
+
+| N | range | joint / rank-only | rank-then-precision / rank-only | margin | FP8 / FP16 share | fixed PD |
+|---|---|---|---|---|---|---|
+| 40,000 | 0.3 | 0.500 | 0.500 | 0.0% | 0% / 0% | no |
+| 40,000 | 0.1 | 0.437 | 0.439 | 0.3% | 12% / 40% | yes |
+| 60,000 | 0.3 | 0.500 | 0.500 | 0.0% | 0% / 0% | no |
+| 60,000 | 0.1 | 0.439 | 0.441 | 0.4% | 11% / 39% | yes |
+
+The margin does not grow with N here: the budget tightens as 1/N and offsets the smaller far-field norms.
+
+**The wind-gust space-time covariance** (`codes/39_joint_windgust.py`; the station-hours and their WRF predictors are in `data/windgust_train_data.csv`,
+a copy of the SC26 application's training file, Jahan et al. 2025 wind gusts over the northeastern United States): random subsets of the 131,889 station-hours of the
+SC26 application (2017-2019 storms, 266 stations), Morton order by spatial location, Gneiting-Matern(3/2) covariance with
+beta = 0 at the parameters fitted by mixed precision in the SC26 paper (spatial range 19.72 km, temporal range 3.61 h,
+relative nugget 0.928, sill 2.07), tau = 0.9. Only the covariance is needed: the tile choices and the positive definiteness
+of the assembled Sigma^TLR do not involve the residuals. Most tile pairs are hours to years apart (the median off-diagonal
+tile norm is 0), so most tiles get rank 0; the remaining tiles spread across all four precision thresholds.
+
+| N | tile b | fixed 1e-4 | rank only | rank then precision | joint | joint / rank-only | r-t-p / rank-only | margin | joint tiles FP8 / FP16 / FP32 / FP64 (rank 0 counted as FP64) | mean rank fixed / adaptive |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 10,000 | 250 | 28.5% | 2.12% | 0.50% | 0.48% | 0.225 | 0.236 | 4.8% | 100 / 69 / 0 / 611 | 35.6 / 2.6 |
+| 10,000 | 500 | 19.9% | 3.19% | 0.76% | 0.68% | 0.214 | 0.238 | 9.8% | 54 / 22 / 0 / 114 | 49.7 / 8.0 |
+| 20,000 | 250 | 25.5% | 1.60% | 0.40% | 0.39% | 0.241 | 0.249 | 3.3% | 143 / 231 / 0 / 2786 | 31.8 / 2.0 |
+| 20,000 | 500 | 18.9% | 2.31% | 0.57% | 0.56% | 0.242 | 0.245 | 1.0% | 69 / 108 / 0 / 603 | 47.2 / 5.8 |
+| 40,000 | 250 | 22.4% | 1.47% | 0.44% | 0.35% | 0.239 | 0.303 | 21.1% | 415 / 668 / 0 / 11637 | 28.0 / 1.8 |
+| 40,000 | 500 | 15.4% | 1.56% | 0.44% | 0.38% | 0.246 | 0.280 | 12.2% | 115 / 295 / 0 / 2750 | 38.4 / 3.9 |
+
+(Off-diagonal bytes as a percentage of the dense FP64 off-diagonal bytes.) On this covariance the budget-governed precision
+choice stores 0.21 to 0.25 of the rank-only bytes (a factor of four to five, against two on the Matern fields), the joint
+choice is 1 to 21% below rank-then-precision with the largest margins at N = 40,000 (21% at tile 250, 12% at tile 500),
+where the tighter budget leaves the sequential choice one precision level higher than the joint one, and the fixed
+tolerance 1e-4 keeps a mean rank of 36 to 50 on tiles the budget drops to rank 0 to 3, storing 10 to 15 times the rank
+rule's bytes. The fitted nugget of 0.93 is a property of these regression residuals, not a chosen setting. Outputs:
+`joint_windgust/joint_windgust_n{N}_b{b}.json`, `results/logs/gust-joint-*.out`, `results/logs/joint-sweep*.out`.
+
+### 14. Metropolis-Hastings driven by the TLR Cholesky factorization with a self-tuned proposal (added 2026-10-23, final 2026-10-24; `codes/38_tlr_cholesky_mcmc.py`, `mcmc_tlrchol/`)
+
+Sections 7 and 11 assembled Sigma^TLR densely inside the chain and shaped the proposal from the exact chain's posterior
+covariance. Here the likelihood is the TLR Cholesky factorization with recompression of `codes/17` (nothing dense is formed;
+a failed factorization rejects the proposal), and the proposal is a random walk on log theta whose scale is adapted during
+burn-in, re-shaped once at half burn-in by the covariance of the chain's own draws, and held fixed afterwards, so no exact
+chain is used anywhere. Same data as section 7 (seed 20261020, N = 5,000, b = 250), four dispersed starts per likelihood
+(chain seeds 101-104, start multipliers 1.3/0.8/1.5, 0.6/1.4/0.5, 2.0/0.5/2.0, 0.8/1.2/0.8), 10,000 iterations with 2,000
+discarded, flat priors on log theta over [0.1, 10] x [0.02, 2] x [0.001, 1], one 4-core CPU job per chain, checkpoint every
+100 iterations. `python3 38_tlr_cholesky_mcmc.py --pool --out ../results/mcmc_tlrchol` pools the chains
+(rank-normalized split R-hat and bulk ESS of section 11's `codes/35`, differences from the pooled exact chains in exact SD).
+
+    sbatch --requeue --job-name=mcmc-tc-adaptive_0.9-c1 storrs_cpu4.sbatch "38_tlr_cholesky_mcmc.py --n 5000 --rule adaptive:0.9 --iters 10000 --burn 2000 --chain_seed 101 --start_mult 1.3,0.8,1.5 --out ../results/mcmc_tlrchol/adaptive_0.9/c1"
+
+| likelihood | chains | posterior mean (sigma2, range, eta) | posterior SD | max split R-hat | bulk ESS | mean diff. in exact SD | SD ratio | failed factorizations per chain | 90% coverage at the posterior mean | s / iteration |
+|---|---|---|---|---|---|---|---|---|---|---|
+| exact | 4 | 1.485, 0.346, 0.0420 | 0.866, 0.063, 0.0178 | 1.003 | 711, 735, 714 |  |  | 0, 0, 0, 0 | 0.937-0.937 | 0.8-2.0 |
+| adaptive TLR Cholesky (tau = 0.9) | 4 | 1.466, 0.344, 0.0424 | 0.846, 0.062, 0.0176 | 1.004 | 752, 785, 750 | -0.02, -0.03, +0.02 | 0.98, 0.99, 0.99 | 0, 0, 0, 0 | 0.937-0.937 | 2.1-4.5 |
+| fixed tolerance 1e-4, TLR Cholesky | 4 | 1.013, 0.306, 0.0521 | 0.229, 0.025, 0.0122 | 1.004 | 1394, 1514, 1380 | -0.55, -0.63, +0.57 | 0.26, 0.39, 0.69 | 0, 0, 0, 2 | 0.917-0.917 | 2.0-2.3 |
+
+With the factorization the software runs and a proposal tuned from the chain itself, the adaptive rule reproduces the exact
+posterior means to 0.03 exact SD and the standard deviations to 2% (four chains, split R-hat <= 1.004), with 0 failed
+factorizations and the exact chains' coverage; the fixed tolerance 1e-4 is shifted by 0.55 to 0.63 SD and narrowed to 0.26 to
+0.69 of the exact SD, the same bias and overconfidence as in the assembled-matrix pilot of section 11 (where it also failed
+206 times; the TLR Cholesky with recompression at 1e-4 failed 2 times in 40,000 proposals at N = 5,000). The self-tuned
+proposal mixes more slowly than the exact-covariance-shaped one of section 11 (bulk ESS about 750 against 2,300 for
+comparable draws), which costs Monte Carlo precision, not accuracy. At the posterior mean the adaptive factor stores 0.153 of
+a dense factor and the 1e-4 factor 0.169. Outputs: `mcmc_tlrchol/<rule>/c<k>/tlr_mcmc_n5000.json`, `chain_n5000.npy`, `mcmc_tlrchol/pooled_n5000.json`,
+`results/logs/mcmc-tc-*.out`.
+
+### 15. Oscillation of the TLR log-likelihood difference over the exact posterior: a numerical total variation bound (added 2026-10-24; `codes/37_posterior_oscillation.py`, `posterior_oscillation_200/`)
+
+Objective 2's bound ||pi^TLR - pi||_TV <= tanh(epsilon/2) needs sup |ell^TLR - ell| over the region where the posterior
+concentrates, and only half the oscillation of d(theta) = ell^TLR(theta) - ell(theta) matters there, since a constant shift
+leaves pi^TLR unchanged. Script 37 evaluates d(theta) at 200 draws of the exact chain of section 7 (same data: seed 20261020,
+N = 5,000, b = 250), thinned evenly after burn-in, for the assembled Sigma^TLR (exact tile SVDs) and for the TLR Cholesky
+factorization with recompression of `codes/17`, for the adaptive rule (tau = 0.9) and the fixed tolerance 1e-4. The script
+writes a partial JSON every 10 draws (`posterior_oscillation_n5000_partial.json`) and the full one at the end; a 300-draw
+copy (`posterior_oscillation_300/`) and a 500-draw copy were also launched, the latter without partial saves and expected to
+time out.
+
+    sbatch --requeue --job-name=posterior-osc200-n5000 storrs_cpu.sbatch "37_posterior_oscillation.py --n 5000 --draws 200 --rules adaptive:0.9,fixed:1e-4 --out ../results/posterior_oscillation_200"
+
+| rule | variant | draws evaluated | failed factorizations | range of d | half-oscillation delta | TV bound tanh(delta/2) |
+|---|---|---|---|---|---|---|
+| adaptive 0.9 | assembled | 200 | 0 | -0.248 to +0.299 | 0.274 | 0.136 |
+| adaptive 0.9 | TLR Cholesky | 200 | 0 | -0.867 to -0.338 | 0.265 | 0.132 |
+| fixed 1e-4 | assembled | 191 | 9 | -28.944 to +1.304 | 15.124 | 1.000 |
+| fixed 1e-4 | TLR Cholesky | 194 | 6 | -29.516 to +1.815 | 15.665 | 1.000 |
+
+For the adaptive rule the TLR Cholesky difference sits in a band of width 0.53 around -0.60 (at the true parameters -0.55,
+at the posterior mean -0.35), so the numerical total variation bound is 0.13 (0.14 for the assembled matrix), against an
+observed difference of 0.03 exact posterior standard deviations in the means (section 14); the a priori bound of section
+12 is vacuous here. For the fixed tolerance 1e-4 the difference swings over 31 units and the factorization fails at 6 of
+the 200 draws (9 of 200 for the assembled matrix), posterior tail draws with a large sigma2 and a small nugget, so its
+bound is 1 and the chain's target is restricted to the region where the factorization completes. Outputs:
+`posterior_oscillation_200/posterior_oscillation_n5000.json`, `results/logs/posterior-osc200-*.out`.

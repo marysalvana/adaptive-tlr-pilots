@@ -39,6 +39,26 @@
     "crps": 0.12417674372024384,
     "cover90": 0.91
    }
+  },
+  {
+   "rule": "fixed",
+   "value": 1e-06,
+   "completed": true,
+   "stored_sigma": 206240500,
+   "sigma_memory_frac": 0.02062405,
+   "seconds": 19419.369956970215,
+   "stored_factor": 349253000,
+   "factor_memory_frac": 0.069849901500985,
+   "mean_rank_factor": 8.126641604010025,
+   "max_rank_factor": 23,
+   "loglik": 6757.067779860212,
+   "loglik_err": null,
+   "skill_true_theta": {
+    "rmse": 0.2204058378118538,
+    "crps": 0.12417620369405749,
+    "cover90": 0.91
+   },
+   "source": "tlr_cholesky_eps6/tlr_cholesky_n100000.json (separate run after the gesvd fallback; same seed and field)"
   }
  ],
  "mle": []

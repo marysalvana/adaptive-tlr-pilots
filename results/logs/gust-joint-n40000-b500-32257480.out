@@ -1,0 +1,11 @@
+node=cn653.storrs.hpc.uconn.edu cpus=32 start=Fri Oct 23 19:17:48 EDT 2026
+wind-gust subset N=40000 of 131889 station-hours; 266 stations; tiles b=500, nB=80; m(theta)=1.920, e_max=2.160e-02
+covariance in 209s; off-diagonal tile norms: [0.0, 0.0, 0.0, 0.442, 17.082]
+per-tile choices in 1395s
+fixed                bytes=0.1535 of dense | mix={8: 0, 16: 0, 32: 0, 64: 3160} | rank(mean/max)=38.4/190 | budget met=True PD=True (40s)
+rank_only            bytes=0.0156 of dense | mix={8: 0, 16: 0, 32: 0, 64: 3160} | rank(mean/max)=3.9/134 | budget met=True PD=True (60s)
+rank_then_precision  bytes=0.0044 of dense | mix={8: 94, 16: 297, 32: 19, 64: 2750} | rank(mean/max)=3.9/134 | budget met=True PD=True (182s)
+joint                bytes=0.0038 of dense | mix={8: 115, 16: 295, 32: 0, 64: 2750} | rank(mean/max)=3.9/135 | budget met=True PD=True (149s)
+joint / rank-only bytes = 0.246 | rank-then-precision / rank-only = 0.280
+saved ../results/preliminary/joint_windgust/joint_windgust_n40000_b500.json
+end=Fri Oct 23 19:53:47 EDT 2026

@@ -1,0 +1,112 @@
+{
+ "settings": {
+  "n": 10000,
+  "n_pred": 300,
+  "b": 500,
+  "sigma2": 1.0,
+  "range": 3.0,
+  "eta": 0.05,
+  "tau": 0.9,
+  "eps": 0.0001,
+  "seed": 20261020,
+  "nu": 2.5,
+  "out": "../results/preliminary/joint_sweep/nu2.5_b500_eta0.05_r3.0"
+ },
+ "theta": [
+  1.0,
+  3.0,
+  0.05
+ ],
+ "e_max": 0.00225,
+ "dense_loglik": 723.8113829587837,
+ "dense_offdiag_bytes": 380000000,
+ "rules": {
+  "fixed": {
+   "offdiag_bytes": 4560000,
+   "offdiag_bytes_frac_of_dense": 0.012,
+   "bytes_frac_of_rank_only": 0.8456973293768546,
+   "precision_mix_tiles": {
+    "8": 0,
+    "16": 0,
+    "32": 0,
+    "64": 190
+   },
+   "mean_rank": 3.0,
+   "max_rank": 3,
+   "max_tile_err": 0.021950901939500736,
+   "budget_met_all_tiles": false,
+   "pd": false,
+   "loglik_err": null,
+   "seconds": 6.765113115310669
+  },
+  "rank_only": {
+   "offdiag_bytes": 5392000,
+   "offdiag_bytes_frac_of_dense": 0.014189473684210526,
+   "bytes_frac_of_rank_only": 1.0,
+   "precision_mix_tiles": {
+    "8": 0,
+    "16": 0,
+    "32": 0,
+    "64": 190
+   },
+   "mean_rank": 3.5473684210526315,
+   "max_rank": 4,
+   "max_tile_err": 0.0022463223702420205,
+   "budget_met_all_tiles": true,
+   "pd": true,
+   "loglik_err": 0.1461520368247875,
+   "seconds": 9.1683509349823,
+   "skill": {
+    "rmse": 0.2038639637251992,
+    "crps": 0.11461792483592945,
+    "cover90": 0.9366666666666666
+   }
+  },
+  "rank_then_precision": {
+   "offdiag_bytes": 2696000,
+   "offdiag_bytes_frac_of_dense": 0.007094736842105263,
+   "bytes_frac_of_rank_only": 0.5,
+   "precision_mix_tiles": {
+    "8": 0,
+    "16": 0,
+    "32": 190,
+    "64": 0
+   },
+   "mean_rank": 3.5473684210526315,
+   "max_rank": 4,
+   "max_tile_err": 0.0022463569080884327,
+   "budget_met_all_tiles": true,
+   "pd": true,
+   "loglik_err": 0.1430747789909219,
+   "seconds": 5.297646522521973,
+   "skill": {
+    "rmse": 0.20386419082078996,
+    "crps": 0.11461802516575084,
+    "cover90": 0.9366666666666666
+   }
+  },
+  "joint": {
+   "offdiag_bytes": 2696000,
+   "offdiag_bytes_frac_of_dense": 0.007094736842105263,
+   "bytes_frac_of_rank_only": 0.5,
+   "precision_mix_tiles": {
+    "8": 0,
+    "16": 0,
+    "32": 190,
+    "64": 0
+   },
+   "mean_rank": 3.5473684210526315,
+   "max_rank": 4,
+   "max_tile_err": 0.0022463569080884327,
+   "budget_met_all_tiles": true,
+   "pd": true,
+   "loglik_err": 0.1430747789909219,
+   "seconds": 8.501986265182495,
+   "skill": {
+    "rmse": 0.20386419082078996,
+    "crps": 0.11461802516575084,
+    "cover90": 0.9366666666666666
+   }
+  }
+ }
+}

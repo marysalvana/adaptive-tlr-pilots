@@ -1,0 +1,9 @@
+node=cn651.storrs.hpc.uconn.edu cpus=32 start=Fri Oct 23 17:07:50 EDT 2026
+simulated N=20000; tiles b=250, nB=80; m(theta)=0.0500
+dense: loglik 1123.750, ||z||^2 19648.7, inverse and factor in 39s
+adaptive_0.9: stored 0.036 | error -0.0771 = T1 -0.0388 + remainder -0.0383 | T1 tile bound 4188.670 (a priori 8497.847745201378) | ||E||_2 0.0537 ||E||_F 0.3770 eta_hat 0.508 | remainder bounds logdet 0.0376 quad 0.0778 | eta-route 1108.8 (eta_hat: 17242.236259121375) (84s)
+adaptive_0.5: stored 0.038 | error -0.2555 = T1 -0.2449 + remainder -0.0106 | T1 tile bound 2358.029 (a priori 4721.026525111877) | ||E||_2 0.0287 ||E||_F 0.2151 eta_hat 0.284 | remainder bounds logdet 0.0119 quad 0.0228 | eta-route 580.6 (eta_hat: 7241.793087030037) (1973s)
+fixed_0.0001: stored 0.029 | error -26.1464 = T1 -5.5332 + remainder -20.6133 | T1 tile bound 55170.629 (a priori None) | ||E||_2 0.8567 ||E||_F 6.4434 eta_hat 9.096 | remainder bounds logdet 72.4151 quad 139.8816 | eta-route 78144.1 (eta_hat: None) (682s)
+fixed_1e-05: stored 0.035 | error +0.5680 = T1 +0.7429 + remainder -0.1749 | T1 tile bound 6585.598 (a priori None) | ||E||_2 0.0724 ||E||_F 0.8151 eta_hat 1.014 | remainder bounds logdet 0.1791 quad 0.3686 | eta-route 1518.9 (eta_hat: None) (114s)
+saved ../results/preliminary/bound_terms/bound_terms_n20000.json
+end=Fri Oct 23 17:56:15 EDT 2026

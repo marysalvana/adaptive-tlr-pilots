@@ -1,0 +1,9 @@
+node=cn652.storrs.hpc.uconn.edu cpus=32 start=Fri Oct 23 17:07:50 EDT 2026
+simulated N=40000; tiles b=250, nB=160; m(theta)=0.0500
+dense: loglik 2372.668, ||z||^2 39903.1, inverse and factor in 184s
+adaptive_0.9: stored 0.026 | error +0.2742 = T1 +0.3037 + remainder -0.0295 | T1 tile bound 7228.014 (a priori 17528.69156440742) | ||E||_2 0.0536 ||E||_F 0.3636 eta_hat 0.452 | remainder bounds logdet 0.0349 quad 0.0665 | eta-route 2233.5 (eta_hat: 28475.73037867796) (316s)
+adaptive_0.5: stored 0.028 | error +0.1746 = T1 +0.1846 + remainder -0.0100 | T1 tile bound 4197.958 (a priori 9738.161980226347) | ||E||_2 0.0313 ||E||_F 0.2115 eta_hat 0.259 | remainder bounds logdet 0.0115 quad 0.0219 | eta-route 1280.2 (eta_hat: 12949.088483781283) (315s)
+fixed_0.0001: assembled Sigma^TLR not positive definite
+fixed_1e-05: stored 0.024 | error -0.5061 = T1 +0.0209 + remainder -0.5270 | T1 tile bound 22225.798 (a priori None) | ||E||_2 0.1688 ||E||_F 1.5391 eta_hat 1.843 | remainder bounds logdet 0.7125 quad 1.3462 | eta-route 7748.9 (eta_hat: None) (318s)
+saved ../results/preliminary/bound_terms/bound_terms_n40000.json
+end=Fri Oct 23 17:30:27 EDT 2026

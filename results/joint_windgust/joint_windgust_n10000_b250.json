@@ -1,0 +1,89 @@
+{
+ "settings": {
+  "n": 10000,
+  "b": 250,
+  "tau": 0.9,
+  "eps": 0.0001,
+  "seed": 20261020,
+  "out": "../results/preliminary/joint_windgust"
+ },
+ "parameters": {
+  "r_s": 19.7246432,
+  "r_t": 3.6102287,
+  "eta": 0.92818591,
+  "sigma2": 2.06869252
+ },
+ "m_theta": 1.920131249186393,
+ "e_max": 0.043202953106693844,
+ "dense_offdiag_bytes": 390000000,
+ "rules": {
+  "fixed": {
+   "offdiag_bytes": 111084000,
+   "offdiag_bytes_frac_of_dense": 0.2848307692307692,
+   "precision_mix_tiles": {
+    "8": 0,
+    "16": 0,
+    "32": 0,
+    "64": 780
+   },
+   "mean_rank": 35.603846153846156,
+   "max_rank": 123,
+   "max_tile_err": 0.0006236544030648861,
+   "budget_met_all_tiles": true,
+   "pd": true,
+   "seconds": 1.8996860980987549,
+   "bytes_frac_of_rank_only": 13.435413642960812
+  },
+  "rank_only": {
+   "offdiag_bytes": 8268000,
+   "offdiag_bytes_frac_of_dense": 0.0212,
+   "precision_mix_tiles": {
+    "8": 0,
+    "16": 0,
+    "32": 0,
+    "64": 780
+   },
+   "mean_rank": 2.65,
+   "max_rank": 49,
+   "max_tile_err": 0.043123906016893775,
+   "budget_met_all_tiles": true,
+   "pd": true,
+   "seconds": 1.5756018161773682,
+   "bytes_frac_of_rank_only": 1.0
+  },
+  "rank_then_precision": {
+   "offdiag_bytes": 1952500,
+   "offdiag_bytes_frac_of_dense": 0.005006410256410256,
+   "precision_mix_tiles": {
+    "8": 77,
+    "16": 92,
+    "32": 0,
+    "64": 611
+   },
+   "mean_rank": 2.65,
+   "max_rank": 49,
+   "max_tile_err": 0.04313232733593018,
+   "budget_met_all_tiles": true,
+   "pd": true,
+   "seconds": 1.6376268863677979,
+   "bytes_frac_of_rank_only": 0.23615142718916304
+  },
+  "joint": {
+   "offdiag_bytes": 1859000,
+   "offdiag_bytes_frac_of_dense": 0.0047666666666666664,
+   "precision_mix_tiles": {
+    "8": 100,
+    "16": 69,
+    "32": 0,
+    "64": 611
+   },
+   "mean_rank": 2.6961538461538463,
+   "max_rank": 49,
+   "max_tile_err": 0.04313232733593018,
+   "budget_met_all_tiles": true,
+   "pd": true,
+   "seconds": 1.5684690475463867,
+   "bytes_frac_of_rank_only": 0.2248427672955975
+  }
+ }
+}

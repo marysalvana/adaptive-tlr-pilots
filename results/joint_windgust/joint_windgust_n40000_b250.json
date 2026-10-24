@@ -1,0 +1,89 @@
+{
+ "settings": {
+  "n": 40000,
+  "b": 250,
+  "tau": 0.9,
+  "eps": 0.0001,
+  "seed": 20261020,
+  "out": "../results/preliminary/joint_windgust"
+ },
+ "parameters": {
+  "r_s": 19.7246432,
+  "r_t": 3.6102287,
+  "eta": 0.92818591,
+  "sigma2": 2.06869252
+ },
+ "m_theta": 1.920131249186393,
+ "e_max": 0.010800738276673461,
+ "dense_offdiag_bytes": 6360000000,
+ "rules": {
+  "fixed": {
+   "offdiag_bytes": 1426924000,
+   "offdiag_bytes_frac_of_dense": 0.22435911949685536,
+   "precision_mix_tiles": {
+    "8": 0,
+    "16": 0,
+    "32": 0,
+    "64": 12720
+   },
+   "mean_rank": 28.04488993710692,
+   "max_rank": 162,
+   "max_tile_err": 0.0015737534698690968,
+   "budget_met_all_tiles": true,
+   "pd": true,
+   "seconds": 27.27830457687378,
+   "bytes_frac_of_rank_only": 15.294589264277139
+  },
+  "rank_only": {
+   "offdiag_bytes": 93296000,
+   "offdiag_bytes_frac_of_dense": 0.014669182389937106,
+   "precision_mix_tiles": {
+    "8": 0,
+    "16": 0,
+    "32": 0,
+    "64": 12720
+   },
+   "mean_rank": 1.8336477987421385,
+   "max_rank": 132,
+   "max_tile_err": 0.010800737787401598,
+   "budget_met_all_tiles": true,
+   "pd": true,
+   "seconds": 26.176740169525146,
+   "bytes_frac_of_rank_only": 1.0
+  },
+  "rank_then_precision": {
+   "offdiag_bytes": 28271000,
+   "offdiag_bytes_frac_of_dense": 0.004445125786163522,
+   "precision_mix_tiles": {
+    "8": 356,
+    "16": 656,
+    "32": 71,
+    "64": 11637
+   },
+   "mean_rank": 1.8336477987421385,
+   "max_rank": 132,
+   "max_tile_err": 0.010800737791568664,
+   "budget_met_all_tiles": true,
+   "pd": true,
+   "seconds": 28.795058012008667,
+   "bytes_frac_of_rank_only": 0.3030247813411079
+  },
+  "joint": {
+   "offdiag_bytes": 22313500,
+   "offdiag_bytes_frac_of_dense": 0.0035084119496855345,
+   "precision_mix_tiles": {
+    "8": 415,
+    "16": 668,
+    "32": 0,
+    "64": 11637
+   },
+   "mean_rank": 1.8474056603773585,
+   "max_rank": 133,
+   "max_tile_err": 0.010800090450726479,
+   "budget_met_all_tiles": true,
+   "pd": true,
+   "seconds": 30.57267999649048,
+   "bytes_frac_of_rank_only": 0.23916888183844967
+  }
+ }
+}

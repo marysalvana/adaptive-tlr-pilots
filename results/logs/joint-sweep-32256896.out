@@ -1,0 +1,145 @@
+=== b=250 eta=0.05 range=0.05 18:58
+fixed                bytes=0.0711 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=8.9/42 | budge
+rank_only            bytes=0.0454 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=5.7/52 | budge
+rank_then_precision  bytes=0.0200 of dense | mix={8: 137, 16: 164, 32: 174, 64: 305} | rank(mean/max)=5.7/52 |
+joint                bytes=0.0197 of dense | mix={8: 144, 16: 171, 32: 160, 64: 305} | rank(mean/max)=5.7/52 |
+joint / rank-only bytes = 0.434 | rank-then-precision / rank-only = 0.441
+=== b=250 eta=0.05 range=0.1 19:00
+fixed                bytes=0.0607 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=7.6/27 | budge
+rank_only            bytes=0.0567 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=7.1/41 | budge
+rank_then_precision  bytes=0.0250 of dense | mix={8: 88, 16: 348, 32: 326, 64: 18} | rank(mean/max)=7.1/41 | b
+joint                bytes=0.0246 of dense | mix={8: 89, 16: 379, 32: 294, 64: 18} | rank(mean/max)=7.1/41 | b
+joint / rank-only bytes = 0.434 | rank-then-precision / rank-only = 0.441
+=== b=250 eta=0.05 range=0.3 19:00
+fixed                bytes=0.0416 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=5.2/12 | budge
+rank_only            bytes=0.0566 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=7.1/23 | budge
+rank_then_precision  bytes=0.0283 of dense | mix={8: 0, 16: 1, 32: 779, 64: 0} | rank(mean/max)=7.1/23 | budge
+joint                bytes=0.0283 of dense | mix={8: 0, 16: 3, 32: 777, 64: 0} | rank(mean/max)=7.1/23 | budge
+joint / rank-only bytes = 0.5 | rank-then-precision / rank-only = 0.5
+=== b=250 eta=0.2 range=0.05 19:01
+fixed                bytes=0.0711 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=8.9/42 | budge
+rank_only            bytes=0.0354 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=4.4/42 | budge
+rank_then_precision  bytes=0.0148 of dense | mix={8: 146, 16: 162, 32: 125, 64: 347} | rank(mean/max)=4.4/42 |
+joint                bytes=0.0141 of dense | mix={8: 149, 16: 191, 32: 93, 64: 347} | rank(mean/max)=4.5/42 | 
+joint / rank-only bytes = 0.398 | rank-then-precision / rank-only = 0.418
+=== b=250 eta=0.2 range=0.1 19:02
+fixed                bytes=0.0607 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=7.6/27 | budge
+rank_only            bytes=0.0442 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=5.5/32 | budge
+rank_then_precision  bytes=0.0183 of dense | mix={8: 140, 16: 361, 32: 237, 64: 42} | rank(mean/max)=5.5/32 | 
+joint                bytes=0.0179 of dense | mix={8: 143, 16: 389, 32: 206, 64: 42} | rank(mean/max)=5.6/32 | 
+joint / rank-only bytes = 0.405 | rank-then-precision / rank-only = 0.414
+=== b=250 eta=0.2 range=0.3 19:02
+fixed                bytes=0.0416 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=5.2/12 | budge
+rank_only            bytes=0.0459 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=5.7/17 | budge
+rank_then_precision  bytes=0.0223 of dense | mix={8: 0, 16: 78, 32: 702, 64: 0} | rank(mean/max)=5.7/17 | budg
+joint                bytes=0.0222 of dense | mix={8: 0, 16: 87, 32: 693, 64: 0} | rank(mean/max)=5.8/17 | budg
+joint / rank-only bytes = 0.484 | rank-then-precision / rank-only = 0.485
+=== b=250 eta=0.5 range=0.05 19:06
+fixed                bytes=0.0711 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=8.9/42 | budge
+rank_only            bytes=0.0292 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=3.6/36 | budge
+rank_then_precision  bytes=0.0110 of dense | mix={8: 131, 16: 192, 32: 75, 64: 382} | rank(mean/max)=3.6/36 | 
+joint                bytes=0.0092 of dense | mix={8: 136, 16: 237, 32: 25, 64: 382} | rank(mean/max)=3.8/36 | 
+joint / rank-only bytes = 0.315 | rank-then-precision / rank-only = 0.377
+=== b=250 eta=0.5 range=0.1 19:06
+fixed                bytes=0.0607 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=7.6/27 | budge
+rank_only            bytes=0.0366 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=4.6/26 | budge
+rank_then_precision  bytes=0.0138 of dense | mix={8: 177, 16: 374, 32: 155, 64: 74} | rank(mean/max)=4.6/26 | 
+joint                bytes=0.0130 of dense | mix={8: 179, 16: 422, 32: 105, 64: 74} | rank(mean/max)=4.7/26 | 
+joint / rank-only bytes = 0.356 | rank-then-precision / rank-only = 0.378
+=== b=250 eta=0.5 range=0.3 19:07
+fixed                bytes=0.0416 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=5.2/12 | budge
+rank_only            bytes=0.0400 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=5.0/13 | budge
+rank_then_precision  bytes=0.0176 of dense | mix={8: 0, 16: 270, 32: 510, 64: 0} | rank(mean/max)=5.0/13 | bud
+joint                bytes=0.0175 of dense | mix={8: 0, 16: 290, 32: 490, 64: 0} | rank(mean/max)=5.0/13 | bud
+joint / rank-only bytes = 0.437 | rank-then-precision / rank-only = 0.44
+=== b=250 eta=1.0 range=0.05 19:12
+fixed                bytes=0.0711 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=8.9/42 | budge
+rank_only            bytes=0.0246 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=3.1/31 | budge
+rank_then_precision  bytes=0.0080 of dense | mix={8: 89, 16: 214, 32: 37, 64: 440} | rank(mean/max)=3.1/31 | b
+joint                bytes=0.0061 of dense | mix={8: 94, 16: 246, 32: 0, 64: 440} | rank(mean/max)=3.1/33 | bu
+joint / rank-only bytes = 0.247 | rank-then-precision / rank-only = 0.327
+=== b=250 eta=1.0 range=0.1 19:12
+fixed                bytes=0.0607 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=7.6/27 | budge
+rank_only            bytes=0.0317 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=4.0/23 | budge
+rank_then_precision  bytes=0.0105 of dense | mix={8: 195, 16: 405, 32: 85, 64: 95} | rank(mean/max)=4.0/23 | b
+joint                bytes=0.0093 of dense | mix={8: 196, 16: 459, 32: 30, 64: 95} | rank(mean/max)=4.1/29 | b
+joint / rank-only bytes = 0.293 | rank-then-precision / rank-only = 0.333
+=== b=250 eta=1.0 range=0.3 19:13
+fixed                bytes=0.0416 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=5.2/12 | budge
+rank_only            bytes=0.0355 of dense | mix={8: 0, 16: 0, 32: 0, 64: 780} | rank(mean/max)=4.4/11 | budge
+rank_then_precision  bytes=0.0138 of dense | mix={8: 0, 16: 448, 32: 332, 64: 0} | rank(mean/max)=4.4/11 | bud
+joint                bytes=0.0134 of dense | mix={8: 0, 16: 502, 32: 278, 64: 0} | rank(mean/max)=4.5/11 | bud
+joint / rank-only bytes = 0.379 | rank-then-precision / rank-only = 0.389
+=== b=500 eta=0.05 range=0.05 19:14
+fixed                bytes=0.0544 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=13.6/56 | budg
+rank_only            bytes=0.0409 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=10.2/66 | budg
+rank_then_precision  bytes=0.0189 of dense | mix={8: 41, 16: 38, 32: 57, 64: 54} | rank(mean/max)=10.2/66 | bu
+joint                bytes=0.0188 of dense | mix={8: 42, 16: 40, 32: 54, 64: 54} | rank(mean/max)=10.2/66 | bu
+joint / rank-only bytes = 0.459 | rank-then-precision / rank-only = 0.462
+=== b=500 eta=0.05 range=0.1 19:15
+fixed                bytes=0.0440 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=11.0/37 | budg
+rank_only            bytes=0.0441 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=11.0/51 | budg
+rank_then_precision  bytes=0.0203 of dense | mix={8: 17, 16: 75, 32: 95, 64: 3} | rank(mean/max)=11.0/51 | bud
+joint                bytes=0.0201 of dense | mix={8: 17, 16: 82, 32: 88, 64: 3} | rank(mean/max)=11.1/51 | bud
+joint / rank-only bytes = 0.456 | rank-then-precision / rank-only = 0.46
+=== b=500 eta=0.05 range=0.3 19:16
+fixed                bytes=0.0276 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=6.9/15 | budge
+rank_only            bytes=0.0390 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=9.7/29 | budge
+rank_then_precision  bytes=0.0195 of dense | mix={8: 0, 16: 1, 32: 189, 64: 0} | rank(mean/max)=9.7/29 | budge
+joint                bytes=0.0195 of dense | mix={8: 0, 16: 1, 32: 189, 64: 0} | rank(mean/max)=9.7/29 | budge
+joint / rank-only bytes = 0.499 | rank-then-precision / rank-only = 0.499
+=== b=500 eta=0.2 range=0.05 19:17
+fixed                bytes=0.0544 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=13.6/56 | budg
+rank_only            bytes=0.0315 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=7.9/52 | budge
+rank_then_precision  bytes=0.0140 of dense | mix={8: 34, 16: 47, 32: 42, 64: 67} | rank(mean/max)=7.9/52 | bud
+joint                bytes=0.0123 of dense | mix={8: 37, 16: 65, 32: 21, 64: 67} | rank(mean/max)=8.3/52 | bud
+joint / rank-only bytes = 0.392 | rank-then-precision / rank-only = 0.444
+=== b=500 eta=0.2 range=0.1 19:17
+fixed                bytes=0.0440 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=11.0/37 | budg
+rank_only            bytes=0.0340 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=8.5/40 | budge
+rank_then_precision  bytes=0.0146 of dense | mix={8: 24, 16: 97, 32: 62, 64: 7} | rank(mean/max)=8.5/40 | budg
+joint                bytes=0.0144 of dense | mix={8: 26, 16: 99, 32: 58, 64: 7} | rank(mean/max)=8.6/40 | budg
+joint / rank-only bytes = 0.424 | rank-then-precision / rank-only = 0.429
+=== b=500 eta=0.2 range=0.3 19:18
+fixed                bytes=0.0276 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=6.9/15 | budge
+rank_only            bytes=0.0309 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=7.7/21 | budge
+rank_then_precision  bytes=0.0152 of dense | mix={8: 0, 16: 14, 32: 176, 64: 0} | rank(mean/max)=7.7/21 | budg
+joint                bytes=0.0152 of dense | mix={8: 0, 16: 15, 32: 175, 64: 0} | rank(mean/max)=7.7/21 | budg
+joint / rank-only bytes = 0.49 | rank-then-precision / rank-only = 0.491
+=== b=500 eta=0.5 range=0.05 19:19
+fixed                bytes=0.0544 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=13.6/56 | budg
+rank_only            bytes=0.0259 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=6.5/43 | budge
+rank_then_precision  bytes=0.0102 of dense | mix={8: 28, 16: 58, 32: 24, 64: 80} | rank(mean/max)=6.5/43 | bud
+joint                bytes=0.0066 of dense | mix={8: 34, 16: 76, 32: 0, 64: 80} | rank(mean/max)=6.7/48 | budg
+joint / rank-only bytes = 0.254 | rank-then-precision / rank-only = 0.394
+=== b=500 eta=0.5 range=0.1 19:20
+fixed                bytes=0.0440 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=11.0/37 | budg
+rank_only            bytes=0.0281 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=7.0/33 | budge
+rank_then_precision  bytes=0.0113 of dense | mix={8: 37, 16: 95, 32: 46, 64: 12} | rank(mean/max)=7.0/33 | bud
+joint                bytes=0.0104 of dense | mix={8: 39, 16: 111, 32: 28, 64: 12} | rank(mean/max)=7.2/33 | bu
+joint / rank-only bytes = 0.368 | rank-then-precision / rank-only = 0.402
+=== b=500 eta=0.5 range=0.3 19:21
+fixed                bytes=0.0276 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=6.9/15 | budge
+rank_only            bytes=0.0262 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=6.6/17 | budge
+rank_then_precision  bytes=0.0120 of dense | mix={8: 0, 16: 54, 32: 136, 64: 0} | rank(mean/max)=6.6/17 | budg
+joint                bytes=0.0118 of dense | mix={8: 0, 16: 67, 32: 123, 64: 0} | rank(mean/max)=6.6/17 | budg
+joint / rank-only bytes = 0.448 | rank-then-precision / rank-only = 0.456
+=== b=500 eta=1.0 range=0.05 19:21
+fixed                bytes=0.0544 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=13.6/56 | budg
+rank_only            bytes=0.0219 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=5.5/38 | budge
+rank_then_precision  bytes=0.0064 of dense | mix={8: 31, 16: 56, 32: 9, 64: 94} | rank(mean/max)=5.5/38 | budg
+joint                bytes=0.0054 of dense | mix={8: 31, 16: 65, 32: 0, 64: 94} | rank(mean/max)=5.5/39 | budg
+joint / rank-only bytes = 0.245 | rank-then-precision / rank-only = 0.294
+=== b=500 eta=1.0 range=0.1 19:22
+fixed                bytes=0.0440 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=11.0/37 | budg
+rank_only            bytes=0.0239 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=6.0/28 | budge
+rank_then_precision  bytes=0.0085 of dense | mix={8: 38, 16: 106, 32: 28, 64: 18} | rank(mean/max)=6.0/28 | bu
+joint                bytes=0.0062 of dense | mix={8: 41, 16: 131, 32: 0, 64: 18} | rank(mean/max)=6.3/33 | bud
+joint / rank-only bytes = 0.258 | rank-then-precision / rank-only = 0.354
+=== b=500 eta=1.0 range=0.3 19:23
+fixed                bytes=0.0276 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=6.9/15 | budge
+rank_only            bytes=0.0229 of dense | mix={8: 0, 16: 0, 32: 0, 64: 190} | rank(mean/max)=5.7/14 | budge
+rank_then_precision  bytes=0.0094 of dense | mix={8: 0, 16: 99, 32: 91, 64: 0} | rank(mean/max)=5.7/14 | budge
+joint                bytes=0.0090 of dense | mix={8: 0, 16: 120, 32: 70, 64: 0} | rank(mean/max)=5.8/14 | budg
+joint / rank-only bytes = 0.391 | rank-then-precision / rank-only = 0.41
+SWEEP DONE

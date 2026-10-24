@@ -1,0 +1,6 @@
+node=cn614.storrs.hpc.uconn.edu cpus=32 start=Fri Oct 23 13:51:22 EDT 2026
+field simulated by a TLR factor (tau=0.02, factor 0.043 of dense)
+simulated N=100000 (+300 held out) in 4169.1s; tiles b=250, nB=400
+fixed    1e-06   completed=True sigma_mem=0.021 factor_mem=0.069849901500985 rank(mean/max)=8.126641604010025/23 dloglik=None skill={'rmse': 0.2204058378118538, 'crps': 0.12417620369405749, 'cover90': 0.91} (19419s)
+saved ../results/preliminary/tlr_cholesky_eps6/tlr_cholesky_n100000.json
+end=Fri Oct 23 20:25:50 EDT 2026
