@@ -9,7 +9,7 @@ beta = 0 at the parameters fitted by mixed precision in the SC26 paper (par_mp o
 r_s = 19.72 km, r_t = 3.61 h, eta = 0.928, sigma2 = 2.07).  No residuals are needed: the tile choices and the
 positive definiteness of the assembled Sigma^TLR depend only on the covariance.
 
-Usage:  python3 39_joint_windgust.py --n 10000 --b 250 --out ../results/joint_windgust
+Usage:  python3 39_joint_windgust.py --n 10000 --b 250 --out ../results/preliminary/joint_windgust
 """
 import argparse, json, os, time, importlib.util
 import numpy as np
@@ -47,8 +47,12 @@ def main():
     ap.add_argument("--tau", type=float, default=0.9)
     ap.add_argument("--eps", type=float, default=1e-4)
     ap.add_argument("--seed", type=int, default=20261020)
-    ap.add_argument("--out", type=str, default="../results/joint_windgust")
+    ap.add_argument("--mp_eps", type=str, default="", help="precision by relative rounding tolerance on the budget rank (2026-10-24)")
+    ap.add_argument("--blr_eps", type=str, default="", help="rank and precision by one relative tolerance (2026-10-24)")
+    ap.add_argument("--extra_rows", action="store_true", help="uniform_16, uniform_32 and block_mp rows (2026-10-24)")
+    ap.add_argument("--out", type=str, default="../results/preliminary/joint_windgust")
     a = ap.parse_args()
+    joint.MP_EPS = [float(x) for x in a.mp_eps.split(",") if x]; joint.BLR_EPS = [float(x) for x in a.blr_eps.split(",") if x]; joint.EXTRA_ROWS = a.extra_rows
     os.makedirs(a.out, exist_ok=True)
     log = lambda m: print(m, flush=True)
     d = pd.read_csv(DATA)
@@ -76,7 +80,7 @@ def main():
             choices[(i, j)] = joint.tile_options(K[i0:i1, j0:j1], emax, a.eps)
     log(f"per-tile choices in {time.time()-t0_:.0f}s")
     out = dict(settings=vars(a), parameters=PAR, m_theta=m_theta, e_max=emax, dense_offdiag_bytes=int(dense_bytes_off), rules={})
-    for rule in ["fixed", "rank_only", "rank_then_precision", "joint"]:
+    for rule in ["fixed", "rank_only", "rank_then_precision", "joint"] + [f"mp_tol_{e:g}" for e in joint.MP_EPS] + [f"blr_{e:g}" for e in joint.BLR_EPS] + (["uniform_16", "uniform_32", "block_mp"] if joint.EXTRA_ROWS else []):
         t0_ = time.time()
         Kr = K.copy(); byt = 0; mix = {p: 0 for p in joint.PREC}; ranks = []; errs = []
         for i, (i0, i1) in enumerate(bounds):

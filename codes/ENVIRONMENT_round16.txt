@@ -1,0 +1,32 @@
+Environment and reproduction of the Objective 3 pilot round (2026-10-24; codes 17 mixed rule, 18 extra rows, 38 joint/rtp rules, 39 flags, 40, 41)
+README sections: results/preliminary/README.md 16a (precision rules compared), 16b (Matern fits), 16c (wind-gust fits), 16d (chains), 16e (rounded TLR Cholesky with recompression).
+
+Machines, Python, threads, seeds: as in codes/ENVIRONMENT_round10.txt (Storrs general partition, miniconda env tlr, numpy 2.4.3,
+          scipy 1.17.1, pandas 3.0.1; data seed 20261020 everywhere; chain seeds 101-108 with the dispersed starts listed below).
+Inputs    data/windgust_train_data.csv (35 MB; copy of hpc4ees/data/train_data.csv) for 39 and 41; 41 uses the 17 WRF predictors of the
+          SC26 application as a linear mean (OLS on the subset, held fixed) and the Gneiting-Matern(3/2, beta = 0) covariance of 39.
+
+Rerun (from codes/, Storrs; one job per line; outputs under results/preliminary/):
+  for eta in 0.005 0.05 0.2; do for r in 0.3 0.1; do sbatch --job-name=joint-tol-eta$eta-r$r storrs_cpu.sbatch "18_joint_rank_precision_pilot.py --n 10000 --eta $eta --range $r --mp_eps 1e-2,1e-3,1e-4 --blr_eps 1e-2,1e-3,1e-4,1e-5 --extra_rows --out ../results/preliminary/joint_tol/eta${eta}_r$r"; done; done
+  for n in 10000 20000 40000; do sbatch --job-name=gust-tol-n$n storrs_cpu_big.sbatch "39_joint_windgust.py --n $n --b 250 --mp_eps 1e-2,1e-3,1e-4 --blr_eps 1e-2,1e-3,1e-4,1e-5 --extra_rows --out ../results/preliminary/joint_windgust_tol"; done
+  sbatch --job-name=joint-fit-n10000 storrs_cpu.sbatch "40_joint_fit_pilot.py --n 10000 --out ../results/preliminary/joint_fit"
+  sbatch --job-name=joint-fit-n10000-r01 storrs_cpu.sbatch "40_joint_fit_pilot.py --n 10000 --range 0.1 --out ../results/preliminary/joint_fit_range0.1"
+  sbatch --job-name=joint-fit-n20000 storrs_cpu_big.sbatch "40_joint_fit_pilot.py --n 20000 --out ../results/preliminary/joint_fit"
+  for rule in dense rank_only rank_then_precision joint; do sbatch --job-name=gust-fit-n10000-$rule storrs_cpu.sbatch "41_windgust_fit.py --n 10000 --rules $rule --restarts 3 --out ../results/preliminary/windgust_fit/$rule"; done
+  for rule in rank_only rank_then_precision joint; do sbatch --job-name=gust-fitw-n10000-$rule storrs_cpu.sbatch "41_windgust_fit.py --n 10000 --rules $rule --restarts 2 --start 1.7253,82.4407,4.6283,1.8822 --out ../results/preliminary/windgust_fit/warm/$rule"; done
+  sbatch --job-name=gust-eval-n10000 storrs_cpu.sbatch "41_windgust_fit.py --n 10000 --rules dense,rank_only,rank_then_precision,joint --eval_at 1.7253,82.4407,4.6283,1.8822 --out ../results/preliminary/windgust_fit/eval"
+  (same four lines with --n 20000 and storrs_cpu_big.sbatch for the N = 20,000 wind-gust fits; the dense N = 20,000 estimate is 2.6166,34.4898,5.3885,0.8952)
+  k=1; for cfg in "101 1.3,0.8,1.5" "102 0.6,1.4,0.5" "103 2.0,0.5,2.0" "104 0.8,1.2,0.8" "105 1.3,0.8,1.5" "106 0.6,1.4,0.5" "107 2.0,0.5,2.0" "108 0.8,1.2,0.8"; do set -- $cfg; for rule in joint rtp; do sbatch --requeue --job-name=mcmc-$rule-c$k storrs_cpu.sbatch "38_tlr_cholesky_mcmc.py --n 5000 --rule $rule:0.9 --iters 4000 --burn 1000 --chain_seed $1 --start_mult $2 --out ../results/preliminary/mcmc_tlrchol/${rule}_0.9/c$k"; done; k=$((k+1)); done
+  python3 38_tlr_cholesky_mcmc.py --pool --burn 1000 --out <a folder holding only dense/ and joint_0.9/ or rtp_0.9/>   # or the pooling lines of README 16d
+  for n in 10000 20000; do t=storrs_cpu.sbatch; [ $n = 20000 ] && t=storrs_cpu_big.sbatch; sbatch --job-name=tlrchol-mixed-rules-n$n $t "17_tlr_cholesky_pilot.py --n $n --rules adaptive:0.9,mixed:0.9,fixed:1e-4 --mle \"\" --out ../results/preliminary/tlr_cholesky_mixed/rules_only"; done
+  sbatch --job-name=tlrchol-mixed-n10000 storrs_cpu.sbatch "17_tlr_cholesky_pilot.py --n 10000 --rules adaptive:0.9,mixed:0.9,fixed:1e-4 --mle dense,adaptive:0.9,mixed:0.9 --out ../results/preliminary/tlr_cholesky_mixed"
+  sbatch --job-name=tlrchol-mixed-n20000 storrs_cpu_big.sbatch "17_tlr_cholesky_pilot.py --n 20000 --rules adaptive:0.9,mixed:0.9,fixed:1e-4 --mle dense,mixed:0.9 --out ../results/preliminary/tlr_cholesky_mixed"
+  sbatch --job-name=tlrchol-mixed-n40000 storrs_cpu_big.sbatch "17_tlr_cholesky_pilot.py --n 40000 --rules adaptive:0.9,mixed:0.9,fixed:1e-4 --mle \"\" --out ../results/preliminary/tlr_cholesky_mixed"
+  (times on shared 16-core nodes: 18 at N = 10,000 with the extra rows 1 to 3 min; 40 compressed fits 15 to 30 s per evaluation, about 1 h;
+   41 dense 3 to 10 s per evaluation, compressed 20 to 30 s, 300 evaluations plus restarts; chains 4 to 11 s per iteration, resume from
+   ckpt_n5000.npz when resubmitted; 17 mixed at N = 10,000 about 2.5 min per factorization.)
+  Nelder-Mead on the wind-gust ridge: the compressed fits stalled 14 log-likelihood units short on the first pass and reached the dense
+  optimum on the first restart (--restarts 3 for every rule, dense included); the warm-start (--start at the dense estimate) and
+  --eval_at runs are diagnostics, reported separately in README 16c.
+
+Smoke (Mac, a few minutes): cd codes && ./run_round16_smoke.sh <empty dir>

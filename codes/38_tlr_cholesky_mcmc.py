@@ -9,8 +9,8 @@ fixed after burn-in (so the chain is a fixed-kernel Metropolis-Hastings sampler 
 chain is used.  The same data as the pilot (seed, N, b), dispersed starts, checkpoint and resume.
 
 Usage:
-  python3 38_tlr_cholesky_mcmc.py --n 5000 --rule adaptive:0.9 --iters 10000 --burn 2000 --chain_seed 101 --start_mult 1.3,0.8,1.5 --out ../results/mcmc_tlrchol/adaptive_0.9/c1
-  python3 38_tlr_cholesky_mcmc.py --pool --out ../results/mcmc_tlrchol        # pooled summaries, split R-hat, ESS
+  python3 38_tlr_cholesky_mcmc.py --n 5000 --rule adaptive:0.9 --iters 10000 --burn 2000 --chain_seed 101 --start_mult 1.3,0.8,1.5 --out ../results/preliminary/mcmc_tlrchol/adaptive_0.9/c1
+  python3 38_tlr_cholesky_mcmc.py --pool --out ../results/preliminary/mcmc_tlrchol        # pooled summaries, split R-hat, ESS
 """
 import argparse, json, os, glob, time, importlib.util
 import numpy as np
@@ -20,6 +20,8 @@ def load(name, fn):
     s = importlib.util.spec_from_file_location(name, os.path.join(here, fn)); m = importlib.util.module_from_spec(s); s.loader.exec_module(m); return m
 rules = load("rules", "11_tlr_rank_rules.py")
 tlr = load("tlr", "17_tlr_cholesky_pilot.py")
+jp = load("jp", "18_joint_rank_precision_pilot.py")      # 2026-10-24: rule joint:tau (rank and storage precision under the budget, Obj. 3)
+from scipy.linalg import cho_solve
 LO, HI = np.log([0.1, 0.02, 0.001]), np.log([10.0, 2.0, 1.0])
 
 
@@ -44,12 +46,40 @@ class Lik:
             ll, cf = rules.loglik_dense(rules.cov_full(self.S, theta), self.y)
             self.last = dict(ok=ll is not None, time=time.time() - t0, cf=cf)
             return -np.inf if ll is None else ll
+        if self.rule in ("joint", "rtp"):
+            K, cf, info = self.rounded(theta)
+            ll, cf = rules.loglik_dense(K, self.y)
+            self.last = dict(ok=ll is not None, time=time.time() - t0, cf=cf, info=info)
+            return -np.inf if ll is None else ll
         ll, fac, info = tlr.tlr_loglik(self.S, self.y, theta, self.bounds, self.rule, self.value)
         self.last = dict(ok=ll is not None, time=time.time() - t0, fac=fac, info=info)
         return -np.inf if ll is None else ll
+    def rounded(self, theta):
+        """Sigma^TLR assembled from the rounded factors, rank and precision chosen under the budget at theta."""
+        n = len(self.y); b = self.bounds[0][1] - self.bounds[0][0]
+        emax = self.value * b * theta[0] * theta[2] / n
+        def pick(i, j, T):
+            opts, svd = jp.tile_options(T, emax, 1e-4)
+            r, p, bb, err = opts["joint" if self.rule == "joint" else "rank_then_precision"]
+            return r, p, bb, err, svd
+        K, byt, mix, ranks, errs = jp.assemble(self.S, theta, self.bounds, self.rule, pick)
+        diag = sum((i1 - i0) ** 2 * 8 for i0, i1 in self.bounds)
+        info = dict(offdiag_bytes=int(byt), precision_mix_tiles={int(k): int(v) for k, v in mix.items()}, mean_rank=float(np.mean(ranks)),
+                    stored_factor=(byt + diag) / 8.0)        # in FP64-entry units, as tlr_loglik reports (whole matrix, both triangles / 2)
+        return K, None, info
     def predict(self, Sp, theta):
         if self.rule == "dense":
             return rules.predict(self.S, self.y, Sp, theta, "dense", None, self.bounds)
+        if self.rule in ("joint", "rtp"):
+            K, _, info = self.rounded(theta)
+            ll, cf = rules.loglik_dense(K, self.y)
+            if ll is None: return None, None
+            self.last = dict(ok=True, info=info)
+            Kp = theta[0] * rules.matern32(rules.dist(Sp, self.S), theta[1])
+            mu = Kp @ cho_solve(cf, self.y, check_finite=False)
+            W = cho_solve(cf, Kp.T, check_finite=False)
+            var = theta[0] * (1 + theta[2]) - (Kp * W.T).sum(1)
+            return mu, np.sqrt(np.maximum(var, 1e-12))
         ll, fac, info = tlr.tlr_loglik(self.S, self.y, theta, self.bounds, self.rule, self.value)
         if ll is None: return None, None
         self.last = dict(ok=True, info=info)
@@ -149,7 +179,7 @@ def main():
     ap.add_argument("--sigma2", type=float, default=1.0)
     ap.add_argument("--range", type=float, default=0.3)
     ap.add_argument("--eta", type=float, default=0.05)
-    ap.add_argument("--rule", type=str, default="adaptive:0.9", help="dense, adaptive:tau, or fixed:eps")
+    ap.add_argument("--rule", type=str, default="adaptive:0.9", help="dense, adaptive:tau, fixed:eps, joint:tau or rtp:tau (rounded factors under the budget, joint or rank-then-precision, 2026-10-24)")
     ap.add_argument("--iters", type=int, default=10000)
     ap.add_argument("--burn", type=int, default=2000)
     ap.add_argument("--seed", type=int, default=20261020)
@@ -157,7 +187,7 @@ def main():
     ap.add_argument("--start_mult", type=str, default="1.3,0.8,1.5")
     ap.add_argument("--ckpt_every", type=int, default=100)
     ap.add_argument("--pool", action="store_true")
-    ap.add_argument("--out", type=str, default="../results/mcmc_tlrchol/adaptive_0.9/c1")
+    ap.add_argument("--out", type=str, default="../results/preliminary/mcmc_tlrchol/adaptive_0.9/c1")
     a = ap.parse_args()
     if a.pool:
         pool(a); return

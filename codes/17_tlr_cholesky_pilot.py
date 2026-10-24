@@ -11,7 +11,10 @@ way a fixed tolerance can make it fail.
 
 Rules (as in 11_tlr_rank_rules.py):
   fixed     relative Frobenius tolerance eps per tile (initial compression and recompression);
-  adaptive  absolute budget e_max = tau * b * m(theta) / N, m(theta) = sigma2 * eta.
+  adaptive  absolute budget e_max = tau * b * m(theta) / N, m(theta) = sigma2 * eta;
+  mixed     (2026-10-24) the adaptive rule plus the storage precision of every factor pair chosen under the same
+            budget (FP8/FP16/FP32/FP64), rounded at the initial compression, after each recompression and after
+            the panel solve; FP64 arithmetic (Objective 3 inside the factorization).
 
 Reported per rule, at the true parameters and after a maximum-likelihood fit with the TLR
 likelihood: whether the factorization completed, stored values of the factor (diagonal tiles
@@ -19,7 +22,7 @@ dense, off-diagonal tiles 2 b r_ij after recompression) relative to a dense fact
 log-likelihood error against the dense Cholesky, wall time, the estimates, and prediction at
 held-out points through TLR triangular solves (RMSE, CRPS, 90% coverage).
 
-Usage:  python3 17_tlr_cholesky_pilot.py --n 10000 --out ../results/tlr_cholesky
+Usage:  python3 17_tlr_cholesky_pilot.py --n 10000 --out ../results/preliminary/tlr_cholesky
 Reproducible: fixed seeds; settings recorded in the JSON output.
 """
 import argparse, json, os, time, importlib.util
@@ -27,6 +30,56 @@ import numpy as np
 from scipy.linalg import svd as scipy_svd
 from scipy import optimize
 from scipy.linalg import cholesky, solve_triangular, LinAlgError
+# 2026-10-24: rule mixed:tau = the adaptive rank rule plus the storage precision of every low-rank factor pair chosen
+# under the same budget (Objective 3 inside the factorization with recompression). Arithmetic stays in FP64; the
+# stored values of U and V are rounded to the lowest of FP8 (E4M3), FP16, FP32, FP64 whose rounding error fits the
+# budget left after truncation. Rounding and scaling as in 18_joint_rank_precision_pilot.py.
+PREC = [8, 16, 32, 64]
+PREC_OF = {}          # (i, j) -> bits of the stored factor tile (filled for rule mixed)
+
+
+def _round_to(x, p):
+    if p == 64:
+        return x
+    if p == 32:
+        return x.astype(np.float32).astype(np.float64)
+    if p == 16:
+        return x.astype(np.float16).astype(np.float64)
+    # FP8 E4M3: 3 fraction bits, exponent -6..8, max 448; round the mantissa to 3 bits after scaling into range
+    a = np.abs(x); sign = np.sign(x)
+    out = np.zeros_like(x)
+    nz = a > 0
+    e = np.floor(np.log2(a[nz])); e = np.clip(e, -9, 8)
+    m = np.round(a[nz] / 2.0 ** e * 8.0) / 8.0
+    v = m * 2.0 ** e
+    v[v > 448.0] = 448.0
+    out[nz] = sign[nz] * v
+    return out
+
+
+def _stored(U, p):
+    if p == 64 or U.size == 0:
+        return U
+    sc = np.abs(U).max()
+    if sc == 0:
+        return U
+    cap = {8: 448.0 * 0.5, 16: 65504.0 * 0.5, 32: 1.0}[p]
+    scale = cap / sc if p < 32 else 1.0
+    return _round_to(U * scale, p) / scale
+
+
+def round_pair(U, V, budget):
+    """Store (U, V) in the lowest precision whose rounding error ||U V^T - fl(U) fl(V)^T||_F fits the budget."""
+    if U.shape[1] == 0:
+        return U, V, 64
+    T = U @ V.T
+    for p in PREC:
+        if p == 64:
+            return U, V, 64
+        Ur, Vr = _stored(U, p), _stored(V, p)
+        if np.linalg.norm(T - Ur @ Vr.T) <= budget:
+            return Ur, Vr, p
+    return U, V, 64
 
 SQRT3 = np.sqrt(3.0)
 here = os.path.dirname(os.path.abspath(__file__))
@@ -60,13 +113,13 @@ def truncate_svd(T, rule, thr_rel, thr_abs):
     tail = np.append(np.sqrt(np.cumsum(s[::-1] ** 2)[::-1]), 0.0)
     thr = thr_rel * np.sqrt((s ** 2).sum()) if rule == "fixed" else thr_abs
     r = int(np.argmax(tail <= thr))
-    return U[:, :r] * s[:r], Vt[:r].T
+    return U[:, :r] * s[:r], Vt[:r].T, float(tail[r])
 
 
 def recompress(U, V, rule, thr_rel, thr_abs):
     """Recompress U V^T (U: b x k, V: b x k) to the smallest rank meeting the rule."""
     if U.shape[1] == 0:
-        return U, V
+        return U, V, 0.0
     Qu, Ru = np.linalg.qr(U)
     Qv, Rv = np.linalg.qr(V)
     W = Ru @ Rv.T                                    # k x k core
@@ -77,7 +130,7 @@ def recompress(U, V, rule, thr_rel, thr_abs):
     tail = np.append(np.sqrt(np.cumsum(s[::-1] ** 2)[::-1]), 0.0)
     thr = thr_rel * np.sqrt((s ** 2).sum()) if rule == "fixed" else thr_abs
     r = int(np.argmax(tail <= thr))
-    return Qu @ (Uw[:, :r] * s[:r]), Qv @ Vwt[:r].T
+    return Qu @ (Uw[:, :r] * s[:r]), Qv @ Vwt[:r].T, float(tail[r])
 
 
 # ------------------------------------------------------------------ TLR Cholesky
@@ -90,6 +143,9 @@ def tlr_cholesky(S, theta, bounds, rule, value):
     b = max(e - s for s, e in bounds)
     sigma2, r, eta = theta
     m_theta = sigma2 * eta
+    mixed = rule == "mixed"
+    if mixed:
+        rule = "adaptive"; PREC_OF.clear()
     thr_rel = value if rule == "fixed" else None
     thr_abs = value * b * m_theta / n if rule == "adaptive" else None
     # initial tiles
@@ -103,7 +159,10 @@ def tlr_cholesky(S, theta, bounds, rule, value):
         stored0 += (i1 - i0) ** 2
         for j, (j0, j1) in enumerate(bounds[:i]):
             T = sigma2 * rules.matern32(rules.dist(S[i0:i1], S[j0:j1]), r)
-            A_off[(i, j)] = truncate_svd(T, rule, thr_rel, thr_abs)
+            U, V, tail_r = truncate_svd(T, rule, thr_rel, thr_abs)
+            if mixed:
+                U, V, p = round_pair(U, V, thr_abs - tail_r)
+            A_off[(i, j)] = (U, V)
             stored0 += 2 * A_off[(i, j)][0].shape[1] * max(i1 - i0, j1 - j0)
     info = dict(stored_sigma=int(stored0), max_rank_sigma=max(u.shape[1] for u, _ in A_off.values()) if A_off else 0)
     # right-looking factorization
@@ -121,6 +180,8 @@ def tlr_cholesky(S, theta, bounds, rule, value):
             U, V = A_off.pop((i, k))
             if U.shape[1]:
                 V = solve_triangular(Lkk, V, lower=True, check_finite=False)
+            if mixed:
+                U, V, p = round_pair(U, V, thr_abs); PREC_OF[(i, k)] = p
             L_off[(i, k)] = (U, V)
         # trailing update A_ij -= L_ik L_jk^T, j <= i
         for i in range(k + 1, nB):
@@ -138,11 +199,19 @@ def tlr_cholesky(S, theta, bounds, rule, value):
                     Uij, Vij = A_off[(i, j)]
                     Unew = np.hstack([Uij, -(Ui @ W)])
                     Vnew = np.hstack([Vij, Uj])
-                    A_off[(i, j)] = recompress(Unew, Vnew, rule, thr_rel, thr_abs)
+                    Ur, Vr, tail_r = recompress(Unew, Vnew, rule, thr_rel, thr_abs)
+                    if mixed:
+                        Ur, Vr, p = round_pair(Ur, Vr, thr_abs - tail_r)
+                    A_off[(i, j)] = (Ur, Vr)
     stored = sum(d.shape[0] ** 2 for d in L_diag) + sum(2 * u.shape[1] * u.shape[0] for u, _ in L_off.values())
     ranks = [u.shape[1] for u, _ in L_off.values()]
     info.update(completed=True, stored_factor=int(stored), mean_rank_factor=float(np.mean(ranks)) if ranks else 0.0,
                 max_rank_factor=int(max(ranks)) if ranks else 0)
+    if mixed:
+        byt = sum(d.shape[0] ** 2 * 8 for d in L_diag) + sum(2 * u.shape[1] * u.shape[0] * PREC_OF[k] // 8 for k, (u, _) in L_off.items())
+        info.update(stored_factor_bytes=int(byt), dense_factor_bytes=int(n * (n + 1) // 2 * 8),
+                    factor_bytes_frac=byt / (n * (n + 1) / 2 * 8),
+                    precision_mix_factor_tiles={p: int(sum(1 for k in L_off if PREC_OF[k] == p)) for p in PREC})
     return L_diag, L_off, info
 
 
@@ -237,7 +306,7 @@ def main():
     ap.add_argument("--seed", type=int, default=20261020)
     ap.add_argument("--dense", type=int, default=1, help="1: compute the dense reference (needs N^2 memory); 0: skip it (large N)")
     ap.add_argument("--sim", type=str, default="dense", choices=["dense", "tlr"], help="simulate the field by a dense Cholesky, or by a tight-budget (tau=0.02) TLR factor when N^2 does not fit")
-    ap.add_argument("--out", type=str, default="../results/tlr_cholesky")
+    ap.add_argument("--out", type=str, default="../results/preliminary/tlr_cholesky")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
 
@@ -292,6 +361,9 @@ def main():
         rec = dict(rule=rule, value=value, completed=info["completed"], stored_sigma=info["stored_sigma"],
                    sigma_memory_frac=info["stored_sigma"] / (a.n * a.n), seconds=time.time() - t0)
         if info["completed"]:
+            if "factor_bytes_frac" in info:
+                rec.update(factor_bytes_frac=info["factor_bytes_frac"], stored_factor_bytes=info["stored_factor_bytes"],
+                           precision_mix_factor_tiles=info["precision_mix_factor_tiles"])
             rec.update(stored_factor=info["stored_factor"], factor_memory_frac=info["stored_factor"] / out["dense_factor_values"],
                        mean_rank_factor=info["mean_rank_factor"], max_rank_factor=info["max_rank_factor"],
                        loglik=ll, loglik_err=None if ll_dense is None else ll - ll_dense,
