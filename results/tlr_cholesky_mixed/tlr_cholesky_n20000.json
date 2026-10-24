@@ -1,0 +1,98 @@
+{
+ "settings": {
+  "n": 20000,
+  "n_pred": 300,
+  "b": 250,
+  "sigma2": 1.0,
+  "range": 0.3,
+  "eta": 0.05,
+  "rules": "adaptive:0.9,mixed:0.9,fixed:1e-4",
+  "mle": "dense,mixed:0.9",
+  "seed": 20261020,
+  "dense": 1,
+  "sim": "dense",
+  "out": "../results/preliminary/tlr_cholesky_mixed"
+ },
+ "theta_true": [
+  1.0,
+  0.3,
+  0.05
+ ],
+ "n_tiles": 80,
+ "dense_factor_values": 200010000,
+ "rules": [
+  {
+   "rule": "adaptive",
+   "value": 0.9,
+   "completed": true,
+   "stored_sigma": 14321500,
+   "sigma_memory_frac": 0.03580375,
+   "seconds": 101.35155916213989,
+   "stored_factor": 11938500,
+   "factor_memory_frac": 0.05968951552422379,
+   "mean_rank_factor": 4.391455696202532,
+   "max_rank_factor": 20,
+   "loglik": 1123.8616710254864,
+   "loglik_err": 0.11170085279809427,
+   "skill_true_theta": {
+    "rmse": 0.22927581023573418,
+    "crps": 0.12960541781858623,
+    "cover90": 0.9
+   }
+  },
+  {
+   "rule": "mixed",
+   "value": 0.9,
+   "completed": true,
+   "stored_sigma": 14321500,
+   "sigma_memory_frac": 0.03580375,
+   "seconds": 446.90750098228455,
+   "factor_bytes_frac": 0.03828714814259287,
+   "stored_factor_bytes": 61262500,
+   "precision_mix_factor_tiles": {
+    "8": 242,
+    "16": 1806,
+    "32": 1112,
+    "64": 0
+   },
+   "stored_factor": 12181000,
+   "factor_memory_frac": 0.06090195490225489,
+   "mean_rank_factor": 4.544936708860759,
+   "max_rank_factor": 20,
+   "loglik": 1122.9189330259214,
+   "loglik_err": -0.8310371467669029,
+   "skill_true_theta": {
+    "rmse": 0.22925577047857987,
+    "crps": 0.1295928551599406,
+    "cover90": 0.9
+   }
+  },
+  {
+   "rule": "fixed",
+   "value": 0.0001,
+   "completed": true,
+   "stored_sigma": 11583000,
+   "sigma_memory_frac": 0.0289575,
+   "seconds": 62.77870583534241,
+   "stored_factor": 16069500,
+   "factor_memory_frac": 0.08034348282585871,
+   "mean_rank_factor": 7.006012658227848,
+   "max_rank_factor": 16,
+   "loglik": 1112.8145160214735,
+   "loglik_err": -10.935454151214799,
+   "skill_true_theta": {
+    "rmse": 0.22954411398976862,
+    "crps": 0.1296429120526266,
+    "cover90": 0.8966666666666666
+   }
+  }
+ ],
+ "mle": [],
+ "dense_loglik_true": 1123.7499701726883,
+ "dense_seconds": 42.43471074104309,
+ "dense_skill_true_theta": {
+  "rmse": 0.2293410031714982,
+  "crps": 0.12964532778631005,
+  "cover90": 0.9
+ }
+}

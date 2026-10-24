@@ -1,0 +1,117 @@
+{
+ "settings": {
+  "n": 10000,
+  "n_pred": 300,
+  "b": 250,
+  "sigma2": 1.0,
+  "range": 0.1,
+  "eta": 0.05,
+  "tau": 0.9,
+  "eps": 0.0001,
+  "seed": 20261020,
+  "rules": "dense,rank_only,joint",
+  "maxiter": 300,
+  "out": "../results/preliminary/joint_fit_range0.1"
+ },
+ "theta_true": [
+  1.0,
+  0.1,
+  0.05
+ ],
+ "fits": {
+  "dense": {
+   "theta_hat": [
+    1.3712819839424704,
+    0.11464092708143708,
+    0.03704215900672004
+   ],
+   "loglik_at_theta_hat": -838.5201605162565,
+   "evals": 85,
+   "failures": 0,
+   "seconds": 264.06893038749695,
+   "skill": {
+    "rmse": 0.21901595563520695,
+    "crps": 0.12221515828474414,
+    "cover90": 0.93
+   },
+   "storage_at_theta_hat": null,
+   "theta_hat_rel_to_dense": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "exact_loglik_at_theta_hat": -838.5201605162565,
+   "exact_loglik_loss_vs_dense_fit": 0.0
+  },
+  "rank_only": {
+   "theta_hat": [
+    1.3631115095596422,
+    0.11422778177433783,
+    0.03727845791086149
+   ],
+   "loglik_at_theta_hat": -838.2464119323249,
+   "evals": 86,
+   "failures": 0,
+   "seconds": 1486.7544088363647,
+   "skill": {
+    "rmse": 0.21903723324244095,
+    "crps": 0.12223004226990962,
+    "cover90": 0.93
+   },
+   "storage_at_theta_hat": {
+    "offdiag_bytes": 23924000,
+    "precision_mix_tiles": {
+     "8": 0,
+     "16": 0,
+     "32": 0,
+     "64": 780
+    },
+    "mean_rank": 7.667948717948718,
+    "max_rank": 40,
+    "offdiag_bytes_frac_of_dense": 0.06134358974358974
+   },
+   "theta_hat_rel_to_dense": [
+    -0.005958274431155153,
+    -0.0036038203599467744,
+    0.006379188213586184
+   ],
+   "exact_loglik_at_theta_hat": -838.5210011095787,
+   "exact_loglik_loss_vs_dense_fit": 0.0008405933222093154
+  },
+  "joint": {
+   "theta_hat": [
+    1.377168279537713,
+    0.11450254787077335,
+    0.03693490575109678
+   ],
+   "loglik_at_theta_hat": -838.1962038773199,
+   "evals": 88,
+   "failures": 0,
+   "seconds": 1543.8475396633148,
+   "skill": {
+    "rmse": 0.2190193649776319,
+    "crps": 0.12222171722213633,
+    "cover90": 0.93
+   },
+   "storage_at_theta_hat": {
+    "offdiag_bytes": 10794000,
+    "precision_mix_tiles": {
+     "8": 40,
+     "16": 345,
+     "32": 392,
+     "64": 3
+    },
+    "mean_rank": 7.725641025641026,
+    "max_rank": 41,
+    "offdiag_bytes_frac_of_dense": 0.027676923076923078
+   },
+   "theta_hat_rel_to_dense": [
+    0.004292549354669717,
+    -0.001207066395803258,
+    -0.0028954374825669316
+   ],
+   "exact_loglik_at_theta_hat": -838.5378420336183,
+   "exact_loglik_loss_vs_dense_fit": 0.017681517361779697
+  }
+ }
+}

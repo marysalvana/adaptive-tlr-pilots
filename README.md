@@ -628,4 +628,265 @@ observed difference of 0.03 exact posterior standard deviations in the means (se
 12 is vacuous here. For the fixed tolerance 1e-4 the difference swings over 31 units and the factorization fails at 6 of
 the 200 draws (9 of 200 for the assembled matrix), posterior tail draws with a large sigma2 and a small nugget, so its
 bound is 1 and the chain's target is restricted to the region where the factorization completes. Outputs:
-`posterior_oscillation_200/posterior_oscillation_n5000.json`, `results/logs/posterior-osc200-*.out`.
+`posterior_oscillation_200/posterior_oscillation_n5000.json`, `logs/posterior-osc200-*.out`.
+
+**300-draw confirmation** (finished 2026-10-24, 5.5 h; `posterior_oscillation_300/posterior_oscillation_n5000.json`,
+`logs/posterior-osc300-*.out`): the same quantities over 300 evenly thinned draws.
+
+| rule | variant | draws evaluated | failed factorizations | range of d | half-oscillation delta | TV bound tanh(delta/2) |
+|---|---|---|---|---|---|---|
+| adaptive 0.9 | assembled | 300 | 0 | -0.240 to +0.328 | 0.284 | 0.141 |
+| adaptive 0.9 | TLR Cholesky | 300 | 0 | -0.845 to -0.265 | 0.290 | 0.144 |
+| fixed 1e-4 | assembled | 290 | 10 | -68.631 to +1.298 | 34.965 | 1.000 |
+| fixed 1e-4 | TLR Cholesky | 293 | 7 | -589.205 to +1.755 | 295.480 | 1.000 |
+
+The adaptive band widens by 0.02 with 100 more draws (0.13 to 0.14), the fixed tolerance's swing grows from 31 to 591
+units with one more failed draw per 100; the proposal quotes the 200-draw study.
+
+### 16. Is the budget-chosen precision needed, and does inference with the rounded factors match dense inference? (added 2026-10-24; `codes/18` `--mp_eps/--blr_eps/--extra_rows`, `codes/39` same flags, `codes/40_joint_fit_pilot.py`, `codes/41_windgust_fit.py`, `codes/38 --rule joint:tau|rtp:tau`; `joint_tol/`, `joint_windgust_tol/`, `joint_fit*/`, `windgust_fit/`, `mcmc_tlrchol/joint_0.9/`, `mcmc_tlrchol/rtp_0.9/`)
+
+Reviewers of the 2026-10-24 draft asked (a) whether the per-tile precision choice is needed at all, or whether one fixed precision or a rounding tolerance would do, (b) how the rule compares with block mixed precision (full-rank tiles in the lowest admissible precision, the construction of the SC26 paper [27]) under the same budget, and (c) whether inference with the rounded factors, not only the log-likelihood at the true parameters, matches dense inference. This section answers all three.
+
+**16a. Precision rules compared.** Same fields and rules as sections 6 and 13 at N = 10,000, tile 250, tau = 0.9, plus: `uniform_16` / `uniform_32` (the rank rule's factors all stored in FP16 / FP32); `mp_tol_<eps>` (the rank rule's rank, then the lowest precision whose rounding error is within eps ||T||_F); `blr_<eps>` (rank and precision both from one relative tolerance eps, as in mixed-precision BLR [53]); `block_mp` (rank b, lowest precision meeting the budget e_max). Log-likelihood difference and held-out scores at the true parameters as in section 6. Off-diagonal bytes as a fraction of dense FP64 off-diagonal bytes; the diagonal tiles stay dense in FP64 for every rule. Nuggets 0.005 to 0.2 are the regimes of scientific interest.
+
+
+Matern 3/2, nugget 0.005, range 0.1, N = 10,000 (e_max = 1.12e-04):
+
+| rule | bytes / dense | / rank only | tiles FP8/FP16/FP32/FP64 | PD | log-lik difference | RMSE / CRPS / 90% cover |
+|---|---|---|---|---|---|---|
+| rank rule, FP64 (Obj. 1) | 8.05% | 1.000 | 0/0/0/780 | yes | +0.15 | 0.0798 / 0.0443 / 0.923 |
+| rank then lowest admissible precision (budget) | 3.83% | 0.476 | 29/226/522/3 | yes | +0.13 | 0.0798 / 0.0443 / 0.923 |
+| joint rank and precision (budget) | 3.81% | 0.473 | 30/249/498/3 | yes | +0.11 | 0.0798 / 0.0443 / 0.923 |
+| rank rule, every factor in FP16 | 2.01% | 0.250 | 0/780/0/0 | no | fails |  |
+| rank rule, every factor in FP32 | 4.02% | 0.500 | 0/0/780/0 | yes | +0.14 | 0.0798 / 0.0443 / 0.923 |
+| rank rule, precision by relative tolerance 1e-2 | 2.03% | 0.252 | 0/752/0/28 | no | fails |  |
+| rank rule, precision by relative tolerance 1e-3 | 2.29% | 0.285 | 0/610/0/170 | no | fails |  |
+| rank rule, precision by relative tolerance 1e-4 | 4.45% | 0.553 | 0/0/503/277 | yes | +0.14 | 0.0798 / 0.0443 / 0.923 |
+| one relative tolerance 1e-2 for rank and precision (BLR) | 0.61% | 0.075 | 0/779/1/0 | no | fails |  |
+| one relative tolerance 1e-3 (BLR) | 1.09% | 0.135 | 0/751/29/0 | no | fails |  |
+| one relative tolerance 1e-4 (BLR) | 3.04% | 0.377 | 0/0/780/0 | yes | -18.83 | 0.0805 / 0.0446 / 0.923 |
+| one relative tolerance 1e-5 (BLR) | 4.24% | 0.527 | 0/0/780/0 | yes | +0.34 | 0.0799 / 0.0443 / 0.923 |
+| block mixed precision under the budget (full tiles, lowest admissible precision; the construction of [27]) | 39.95% | 4.965 | 39/255/486/0 | yes | +0.03 | 0.0798 / 0.0443 / 0.923 |
+| tolerance 1e-4 rank, FP64 (current practice) | 6.07% | 0.754 | 0/0/0/780 | yes | -18.83 | 0.0805 / 0.0446 / 0.923 |
+
+Matern 3/2, nugget 0.005, range 0.3, N = 10,000 (e_max = 1.12e-04):
+
+| rule | bytes / dense | / rank only | tiles FP8/FP16/FP32/FP64 | PD | log-lik difference | RMSE / CRPS / 90% cover |
+|---|---|---|---|---|---|---|
+| rank rule, FP64 (Obj. 1) | 7.93% | 1.000 | 0/0/0/780 | yes | +0.08 | 0.0677 / 0.0378 / 0.923 |
+| rank then lowest admissible precision (budget) | 3.96% | 0.500 | 0/0/780/0 | yes | +0.08 | 0.0677 / 0.0378 / 0.923 |
+| joint rank and precision (budget) | 3.96% | 0.500 | 0/0/780/0 | yes | +0.08 | 0.0677 / 0.0378 / 0.923 |
+| rank rule, every factor in FP16 | 1.98% | 0.250 | 0/780/0/0 | no | fails |  |
+| rank rule, every factor in FP32 | 3.96% | 0.500 | 0/0/780/0 | yes | +0.08 | 0.0677 / 0.0378 / 0.923 |
+| rank rule, precision by relative tolerance 1e-2 | 1.98% | 0.250 | 0/780/0/0 | no | fails |  |
+| rank rule, precision by relative tolerance 1e-3 | 1.98% | 0.250 | 0/780/0/0 | no | fails |  |
+| rank rule, precision by relative tolerance 1e-4 | 3.96% | 0.500 | 0/0/780/0 | yes | +0.08 | 0.0677 / 0.0378 / 0.923 |
+| one relative tolerance 1e-2 for rank and precision (BLR) | 0.45% | 0.056 | 0/780/0/0 | no | fails |  |
+| one relative tolerance 1e-3 (BLR) | 0.77% | 0.097 | 0/765/15/0 | no | fails |  |
+| one relative tolerance 1e-4 (BLR) | 2.08% | 0.263 | 0/0/780/0 | no | fails |  |
+| one relative tolerance 1e-5 (BLR) | 2.97% | 0.375 | 0/0/780/0 | yes | -5.04 | 0.0678 / 0.0379 / 0.923 |
+| block mixed precision under the budget (full tiles, lowest admissible precision; the construction of [27]) | 50.00% | 6.306 | 0/0/780/0 | yes | -0.01 | 0.0676 / 0.0378 / 0.923 |
+| tolerance 1e-4 rank, FP64 (current practice) | 4.16% | 0.525 | 0/0/0/780 | no | fails |  |
+
+Matern 3/2, nugget 0.05, range 0.1, N = 10,000 (e_max = 1.12e-03):
+
+| rule | bytes / dense | / rank only | tiles FP8/FP16/FP32/FP64 | PD | log-lik difference | RMSE / CRPS / 90% cover |
+|---|---|---|---|---|---|---|
+| rank rule, FP64 (Obj. 1) | 5.67% | 1.000 | 0/0/0/780 | yes | +0.17 | 0.2192 / 0.1222 / 0.930 |
+| rank then lowest admissible precision (budget) | 2.50% | 0.441 | 88/348/326/18 | yes | +0.17 | 0.2192 / 0.1222 / 0.930 |
+| joint rank and precision (budget) | 2.46% | 0.434 | 89/379/294/18 | yes | +0.10 | 0.2192 / 0.1222 / 0.930 |
+| rank rule, every factor in FP16 | 1.42% | 0.250 | 0/780/0/0 | yes | +0.82 | 0.2193 / 0.1223 / 0.927 |
+| rank rule, every factor in FP32 | 2.84% | 0.500 | 0/0/780/0 | yes | +0.17 | 0.2192 / 0.1222 / 0.930 |
+| rank rule, precision by relative tolerance 1e-2 | 1.51% | 0.267 | 0/655/0/125 | yes | +0.82 | 0.2193 / 0.1223 / 0.927 |
+| rank rule, precision by relative tolerance 1e-3 | 1.84% | 0.325 | 0/482/4/294 | yes | +0.81 | 0.2193 / 0.1223 / 0.927 |
+| rank rule, precision by relative tolerance 1e-4 | 3.61% | 0.637 | 0/0/286/494 | yes | +0.17 | 0.2192 / 0.1222 / 0.930 |
+| one relative tolerance 1e-2 for rank and precision (BLR) | 0.61% | 0.107 | 0/779/1/0 | no | fails |  |
+| one relative tolerance 1e-3 (BLR) | 1.09% | 0.191 | 0/751/29/0 | yes | -22.66 | 0.2216 / 0.1237 / 0.933 |
+| one relative tolerance 1e-4 (BLR) | 3.04% | 0.535 | 0/0/780/0 | yes | -0.69 | 0.2192 / 0.1222 / 0.930 |
+| one relative tolerance 1e-5 (BLR) | 4.24% | 0.748 | 0/0/780/0 | yes | +0.14 | 0.2192 / 0.1222 / 0.930 |
+| block mixed precision under the budget (full tiles, lowest admissible precision; the construction of [27]) | 31.86% | 5.618 | 142/353/285/0 | yes | -0.10 | 0.2192 / 0.1222 / 0.930 |
+| tolerance 1e-4 rank, FP64 (current practice) | 6.07% | 1.071 | 0/0/0/780 | yes | -0.69 | 0.2192 / 0.1222 / 0.930 |
+
+Matern 3/2, nugget 0.05, range 0.3, N = 10,000 (e_max = 1.12e-03):
+
+| rule | bytes / dense | / rank only | tiles FP8/FP16/FP32/FP64 | PD | log-lik difference | RMSE / CRPS / 90% cover |
+|---|---|---|---|---|---|---|
+| rank rule, FP64 (Obj. 1) | 5.66% | 1.000 | 0/0/0/780 | yes | -0.25 | 0.2058 / 0.1159 / 0.933 |
+| rank then lowest admissible precision (budget) | 2.83% | 0.500 | 0/1/779/0 | yes | -0.25 | 0.2058 / 0.1159 / 0.933 |
+| joint rank and precision (budget) | 2.83% | 0.500 | 0/3/777/0 | yes | -0.26 | 0.2058 / 0.1159 / 0.933 |
+| rank rule, every factor in FP16 | 1.42% | 0.250 | 0/780/0/0 | no | fails |  |
+| rank rule, every factor in FP32 | 2.83% | 0.500 | 0/0/780/0 | yes | -0.25 | 0.2058 / 0.1159 / 0.933 |
+| rank rule, precision by relative tolerance 1e-2 | 1.42% | 0.250 | 0/780/0/0 | no | fails |  |
+| rank rule, precision by relative tolerance 1e-3 | 1.42% | 0.250 | 0/780/0/0 | no | fails |  |
+| rank rule, precision by relative tolerance 1e-4 | 2.84% | 0.502 | 0/0/774/6 | yes | -0.25 | 0.2058 / 0.1159 / 0.933 |
+| one relative tolerance 1e-2 for rank and precision (BLR) | 0.45% | 0.079 | 0/780/0/0 | no | fails |  |
+| one relative tolerance 1e-3 (BLR) | 0.77% | 0.135 | 0/765/15/0 | no | fails |  |
+| one relative tolerance 1e-4 (BLR) | 2.08% | 0.368 | 0/0/780/0 | yes | -0.89 | 0.2058 / 0.1160 / 0.937 |
+| one relative tolerance 1e-5 (BLR) | 2.97% | 0.525 | 0/0/780/0 | yes | -0.44 | 0.2057 / 0.1159 / 0.937 |
+| block mixed precision under the budget (full tiles, lowest admissible precision; the construction of [27]) | 49.78% | 8.790 | 0/7/773/0 | yes | +0.02 | 0.2057 / 0.1159 / 0.937 |
+| tolerance 1e-4 rank, FP64 (current practice) | 4.16% | 0.735 | 0/0/0/780 | yes | -0.89 | 0.2058 / 0.1160 / 0.937 |
+
+Matern 3/2, nugget 0.2, range 0.1, N = 10,000 (e_max = 4.50e-03):
+
+| rule | bytes / dense | / rank only | tiles FP8/FP16/FP32/FP64 | PD | log-lik difference | RMSE / CRPS / 90% cover |
+|---|---|---|---|---|---|---|
+| rank rule, FP64 (Obj. 1) | 4.42% | 1.000 | 0/0/0/780 | yes | +0.06 | 0.4203 / 0.2359 / 0.927 |
+| rank then lowest admissible precision (budget) | 1.83% | 0.414 | 140/361/237/42 | yes | +0.01 | 0.4202 / 0.2358 / 0.927 |
+| joint rank and precision (budget) | 1.79% | 0.405 | 143/389/206/42 | yes | +0.04 | 0.4203 / 0.2359 / 0.927 |
+| rank rule, every factor in FP16 | 1.10% | 0.250 | 0/780/0/0 | yes | +0.30 | 0.4203 / 0.2359 / 0.923 |
+| rank rule, every factor in FP32 | 2.21% | 0.500 | 0/0/780/0 | yes | +0.06 | 0.4203 / 0.2359 / 0.927 |
+| rank rule, precision by relative tolerance 1e-2 | 1.26% | 0.284 | 0/574/0/206 | yes | +0.30 | 0.4203 / 0.2359 / 0.923 |
+| rank rule, precision by relative tolerance 1e-3 | 1.67% | 0.378 | 0/374/3/403 | yes | +0.30 | 0.4203 / 0.2359 / 0.923 |
+| rank rule, precision by relative tolerance 1e-4 | 3.31% | 0.750 | 0/0/137/643 | yes | +0.06 | 0.4203 / 0.2359 / 0.927 |
+| one relative tolerance 1e-2 for rank and precision (BLR) | 0.61% | 0.137 | 0/779/1/0 | no | fails |  |
+| one relative tolerance 1e-3 (BLR) | 1.09% | 0.246 | 0/751/29/0 | yes | -1.72 | 0.4206 / 0.2361 / 0.930 |
+| one relative tolerance 1e-4 (BLR) | 3.04% | 0.687 | 0/0/780/0 | yes | -0.12 | 0.4203 / 0.2358 / 0.927 |
+| one relative tolerance 1e-5 (BLR) | 4.24% | 0.961 | 0/0/780/0 | yes | +0.04 | 0.4203 / 0.2358 / 0.923 |
+| block mixed precision under the budget (full tiles, lowest admissible precision; the construction of [27]) | 27.45% | 6.217 | 209/390/181/0 | yes | +0.02 | 0.4203 / 0.2359 / 0.927 |
+| tolerance 1e-4 rank, FP64 (current practice) | 6.07% | 1.375 | 0/0/0/780 | yes | -0.12 | 0.4203 / 0.2358 / 0.927 |
+
+Matern 3/2, nugget 0.2, range 0.3, N = 10,000 (e_max = 4.50e-03):
+
+| rule | bytes / dense | / rank only | tiles FP8/FP16/FP32/FP64 | PD | log-lik difference | RMSE / CRPS / 90% cover |
+|---|---|---|---|---|---|---|
+| rank rule, FP64 (Obj. 1) | 4.59% | 1.000 | 0/0/0/780 | yes | -0.22 | 0.4085 / 0.2304 / 0.937 |
+| rank then lowest admissible precision (budget) | 2.23% | 0.485 | 0/78/702/0 | yes | -0.31 | 0.4085 / 0.2304 / 0.937 |
+| joint rank and precision (budget) | 2.22% | 0.484 | 0/87/693/0 | yes | -0.30 | 0.4085 / 0.2304 / 0.937 |
+| rank rule, every factor in FP16 | 1.15% | 0.250 | 0/780/0/0 | yes | -1.12 | 0.4092 / 0.2309 / 0.940 |
+| rank rule, every factor in FP32 | 2.30% | 0.500 | 0/0/780/0 | yes | -0.22 | 0.4085 / 0.2304 / 0.937 |
+| rank rule, precision by relative tolerance 1e-2 | 1.15% | 0.250 | 0/780/0/0 | yes | -1.12 | 0.4092 / 0.2309 / 0.940 |
+| rank rule, precision by relative tolerance 1e-3 | 1.15% | 0.250 | 0/780/0/0 | yes | -1.12 | 0.4092 / 0.2309 / 0.940 |
+| rank rule, precision by relative tolerance 1e-4 | 2.44% | 0.531 | 0/0/696/84 | yes | -0.22 | 0.4085 / 0.2304 / 0.937 |
+| one relative tolerance 1e-2 for rank and precision (BLR) | 0.45% | 0.097 | 0/780/0/0 | no | fails |  |
+| one relative tolerance 1e-3 (BLR) | 0.77% | 0.167 | 0/765/15/0 | no | fails |  |
+| one relative tolerance 1e-4 (BLR) | 2.08% | 0.453 | 0/0/780/0 | yes | +0.29 | 0.4085 / 0.2304 / 0.937 |
+| one relative tolerance 1e-5 (BLR) | 2.97% | 0.648 | 0/0/780/0 | yes | -0.10 | 0.4085 / 0.2304 / 0.937 |
+| block mixed precision under the budget (full tiles, lowest admissible precision; the construction of [27]) | 45.42% | 9.889 | 0/143/637/0 | yes | +0.08 | 0.4084 / 0.2304 / 0.937 |
+| tolerance 1e-4 rank, FP64 (current practice) | 4.16% | 0.907 | 0/0/0/780 | yes | +0.29 | 0.4085 / 0.2304 / 0.937 |
+
+Wind-gust covariance (SC26 fitted parameters, relative nugget 0.93), N = 10,000, tile 250 (bytes and positive definiteness only; the covariance carries no residuals):
+
+| rule | bytes / dense | / rank only | tiles FP8/FP16/FP32/FP64 | PD |
+|---|---|---|---|---|
+| rank rule, FP64 (Obj. 1) | 2.12% | 1.000 | 0/0/0/780 | yes |
+| rank then lowest admissible precision (budget) | 0.50% | 0.236 | 77/92/0/611 | yes |
+| joint rank and precision (budget) | 0.48% | 0.225 | 100/69/0/611 | yes |
+| rank rule, every factor in FP16 | 0.53% | 0.250 | 0/780/0/0 | yes |
+| rank rule, every factor in FP32 | 1.06% | 0.500 | 0/0/780/0 | yes |
+| rank rule, precision by relative tolerance 1e-2 | 1.78% | 0.839 | 3/22/0/755 | yes |
+| rank rule, precision by relative tolerance 1e-3 | 2.11% | 0.997 | 1/3/0/776 | yes |
+| rank rule, precision by relative tolerance 1e-4 | 2.12% | 1.000 | 0/0/0/780 | yes |
+| one relative tolerance 1e-2 for rank and precision (BLR) | 3.75% | 1.768 | 8/772/0/0 | yes |
+| one relative tolerance 1e-3 (BLR) | 6.91% | 3.257 | 1/669/110/0 | yes |
+| one relative tolerance 1e-4 (BLR) | 14.23% | 6.712 | 0/9/771/0 | yes |
+| one relative tolerance 1e-5 (BLR) | 17.55% | 8.277 | 0/1/779/0 | yes |
+| block mixed precision under the budget (full tiles, lowest admissible precision; the construction of [27]) | 13.32% | 6.282 | 729/51/0/0 | yes |
+| tolerance 1e-4 rank, FP64 (current practice) | 28.48% | 13.435 | 0/0/0/780 | yes |
+
+Wind-gust covariance (SC26 fitted parameters, relative nugget 0.93), N = 20,000, tile 250 (bytes and positive definiteness only; the covariance carries no residuals):
+
+| rule | bytes / dense | / rank only | tiles FP8/FP16/FP32/FP64 | PD |
+|---|---|---|---|---|
+| rank rule, FP64 (Obj. 1) | 1.60% | 1.000 | 0/0/0/3160 | yes |
+| rank then lowest admissible precision (budget) | 0.40% | 0.249 | 118/254/2/2786 | yes |
+| joint rank and precision (budget) | 0.39% | 0.241 | 143/231/0/2786 | yes |
+| rank rule, every factor in FP16 | 0.40% | 0.250 | 0/3160/0/0 | yes |
+| rank rule, every factor in FP32 | 0.80% | 0.500 | 0/0/3160/0 | yes |
+| rank rule, precision by relative tolerance 1e-2 | 0.63% | 0.392 | 5/187/0/2968 | yes |
+| rank rule, precision by relative tolerance 1e-3 | 1.59% | 0.995 | 0/9/0/3151 | yes |
+| rank rule, precision by relative tolerance 1e-4 | 1.60% | 1.000 | 0/1/0/3159 | yes |
+| one relative tolerance 1e-2 for rank and precision (BLR) | 3.88% | 2.429 | 17/3143/0/0 | yes |
+| one relative tolerance 1e-3 (BLR) | 5.91% | 3.700 | 0/2844/316/0 | yes |
+| one relative tolerance 1e-4 (BLR) | 12.72% | 7.967 | 0/16/3144/0 | yes |
+| one relative tolerance 1e-5 (BLR) | 15.54% | 9.732 | 0/1/3159/0 | yes |
+| block mixed precision under the budget (full tiles, lowest admissible precision; the construction of [27]) | 13.37% | 8.370 | 2941/219/0/0 | yes |
+| tolerance 1e-4 rank, FP64 (current practice) | 25.47% | 15.946 | 0/0/0/3160 | yes |
+
+Wind-gust covariance (SC26 fitted parameters, relative nugget 0.93), N = 40,000, tile 250 (bytes and positive definiteness only; the covariance carries no residuals):
+
+| rule | bytes / dense | / rank only | tiles FP8/FP16/FP32/FP64 | PD |
+|---|---|---|---|---|
+| rank rule, FP64 (Obj. 1) | 1.47% | 1.000 | 0/0/0/12720 | yes |
+| rank then lowest admissible precision (budget) | 0.44% | 0.303 | 356/656/71/11637 | yes |
+| joint rank and precision (budget) | 0.35% | 0.239 | 415/668/0/11637 | yes |
+| rank rule, every factor in FP16 | 0.37% | 0.250 | 0/12720/0/0 | yes |
+| rank rule, every factor in FP32 | 0.73% | 0.500 | 0/0/12720/0 | yes |
+| rank rule, precision by relative tolerance 1e-2 | 0.54% | 0.368 | 2/600/0/12118 | yes |
+| rank rule, precision by relative tolerance 1e-3 | 1.21% | 0.827 | 0/68/13/12639 | yes |
+| rank rule, precision by relative tolerance 1e-4 | 1.47% | 0.999 | 0/1/7/12712 | yes |
+| one relative tolerance 1e-2 for rank and precision (BLR) | 3.76% | 2.560 | 76/12641/3/0 | yes |
+| one relative tolerance 1e-3 (BLR) | 5.22% | 3.558 | 0/11784/936/0 | yes |
+| one relative tolerance 1e-4 (BLR) | 11.22% | 7.646 | 0/18/12702/0 | yes |
+| one relative tolerance 1e-5 (BLR) | 13.46% | 9.175 | 0/0/12720/0 | yes |
+| block mixed precision under the budget (full tiles, lowest admissible precision; the construction of [27]) | 13.13% | 8.951 | 12078/642/0/0 | yes |
+| tolerance 1e-4 rank, FP64 (current practice) | 22.44% | 15.295 | 0/0/0/12720 | yes |
+
+Findings (nuggets 0.005 to 0.2, N = 10,000): the budget rules (rank then precision, joint) are positive definite in all 12 cases and within 0.09 of the rank-only log-likelihood, with the same held-out scores. Every factor in FP16 is not positive definite in 3 of 6 settings and, where it is, moves the log-likelihood by 0.2 to 0.9 from rank-only. A relative rounding tolerance of 1e-2 or 1e-3 on the budget rank is not positive definite in 6 of 12 cases; 1e-4 is safe but stores 1.0 to 1.8 times the budget rule's bytes. One relative tolerance for rank and precision (the BLR rule) is not positive definite in 11 of 24 cases, and at nugget 0.005 no tolerance from 1e-2 to 1e-5 is both positive definite and within 5 of the exact log-likelihood at both ranges. Block mixed precision under the same budget is accurate (within 0.1) but stores 10 to 20 times the budget rule's bytes on the Matern fields and 27 to 34 times on the wind-gust covariance. Every factor in FP32 is safe here and coincides with the budget rule's choice at ranges 0.3 and 1; the budget rule finds the FP8 and FP16 tiles at range 0.1 (bytes 0.41 to 0.47 of rank-only against 0.50) and on the wind gusts (0.21 to 0.25 against 0.50).
+
+**16b. Maximum likelihood with the rounded factors re-chosen at every candidate theta** (`codes/40_joint_fit_pilot.py`; same field, seed, dispersed start theta_true * (1.5, 0.6, 2.0) and Nelder-Mead settings as section 1; e_max follows theta through m(theta) = sigma2 eta, so ranks and precisions change along the path). Estimates relative to the dense fit, exact log-likelihood at each estimate relative to the dense fit's, held-out scores (300 points), bytes at the estimate.
+
+| field | fit | sigma2, range, nugget | estimate vs dense | exact log-lik loss vs dense fit | RMSE / CRPS / 90% cover | off-diag bytes / dense | precision mix (tiles) | evals, failures |
+|---|---|---|---|---|---|---|---|---|
+| Matern, range 0.3, N = 10,000 | dense | 1.3940, 0.3239, 0.0360 | reference | 0.000 | 0.2056 / 0.1158 / 0.937 | 100% |  | 80, 0 |
+| Matern, range 0.3, N = 10,000 | rank_only | 1.3956, 0.3263, 0.0360 | within 0.7% | 0.021 | 0.2056 / 0.1158 / 0.937 | 5.88% | 0/0/0/780 | 80, 0 |
+| Matern, range 0.3, N = 10,000 | joint | 1.3956, 0.3263, 0.0360 | within 0.7% | 0.021 | 0.2056 / 0.1158 / 0.937 | 2.94% | 0/0/780/0 | 81, 0 |
+| Matern, range 0.1, N = 10,000 | dense | 1.3713, 0.1146, 0.0370 | reference | 0.000 | 0.2190 / 0.1222 / 0.930 | 100% |  | 85, 0 |
+| Matern, range 0.1, N = 10,000 | rank_only | 1.3631, 0.1142, 0.0373 | within 0.6% | 0.001 | 0.2190 / 0.1222 / 0.930 | 6.13% | 0/0/0/780 | 86, 0 |
+| Matern, range 0.1, N = 10,000 | joint | 1.3772, 0.1145, 0.0369 | within 0.4% | 0.018 | 0.2190 / 0.1222 / 0.930 | 2.77% | 40/345/392/3 | 88, 0 |
+| Matern, range 0.3, N = 20,000 | dense | 1.3603, 0.3364, 0.0361 | reference | 0.000 | 0.2294 / 0.1297 / 0.893 | 100% |  | 89, 0 |
+| Matern, range 0.3, N = 20,000 | rank_only | 1.3747, 0.3365, 0.0357 | within 1.2% | 0.030 | 0.2294 / 0.1297 / 0.893 | 4.86% | 0/0/0/3160 | 92, 0 |
+| Matern, range 0.3, N = 20,000 | joint | 1.3747, 0.3365, 0.0357 | within 1.2% | 0.030 | 0.2294 / 0.1297 / 0.893 | 2.43% | 0/0/3160/0 | 92, 0 |
+
+The compressed fits reach the dense estimates to within 1.2% on every parameter with the same held-out scores, lose at most 0.03 in exact log-likelihood, never fail to factorize, and take the same number of evaluations as the dense fit. The joint rule's factor is 2.4 to 2.9% of the dense off-diagonal bytes (0.45 to 0.50 of rank-only).
+
+**16c. Wind-gust maximum likelihood with the rounded factors** (`codes/41_windgust_fit.py`): random subset of N = 10,000 station-hours of the SC26 record (seed 20261020, the subset of section 13) plus 300 held-out station-hours; gust = linear mean in the 17 WRF predictors of the SC26 application (ordinary least squares on the subset, held fixed; R^2 = 0.31) + space-time GP residual with the Gneiting-Matern(3/2, beta = 0) covariance of section 13 and a nugget, theta = (sigma2, r_s km, r_t h, relative nugget), fitted by Nelder-Mead from the SC26 estimates (2.07, 19.7, 3.61, 0.93) with up to three restarts from the result (the standard remedy for premature Nelder-Mead termination, applied to every rule, dense included). The likelihood ridge between sigma2 and the nugget is flat under the linear mean, and the first Nelder-Mead pass of the two precision rules stalled 14 units short of the optimum before the first restart carried them to it; the dense fit itself needed 292 evaluations. Rows `warm`: the same fits started at the dense estimate; row `at dense estimate`: each rule's log-likelihood and prediction evaluated at the dense estimate without fitting.
+
+| start | fit | sigma2, r_s, r_t, nugget | own log-lik at estimate | RMSE / CRPS / 90% cover | off-diag bytes / dense | tiles FP8/FP16/FP32/FP64 (rank 0 counted as FP64) | mean rank | evals, failures |
+|---|---|---|---|---|---|---|---|---|
+| SC26 estimates | dense | 1.725, 82.430, 4.628, 1.882 | -21690.761 | 1.9379 / 1.0800 / 0.913 | 100% |  |  | 292, 0 |
+| SC26 estimates | rank_only | 1.725, 83.011, 4.636, 1.884 | -21690.751 | 1.9382 / 1.0802 / 0.913 | 5.01% | 0/0/0/780 | 6.3 | 346, 0 |
+| SC26 estimates | rank_then_precision | 1.780, 78.693, 4.590, 1.797 | -21690.706 | 1.9355 / 1.0786 / 0.913 | 1.23% | 42/159/1/578 | 6.2 | 360, 0 |
+| SC26 estimates | joint | 1.717, 81.175, 4.746, 1.893 | -21690.725 | 1.9363 / 1.0793 / 0.913 | 1.21% | 45/157/0/578 | 6.2 | 399, 0 |
+| warm (dense estimate) | rank_only | 1.725, 82.941, 4.626, 1.884 | -21690.753 | 1.9382 / 1.0802 / 0.913 | 5.01% | 0/0/0/780 | 6.3 | 145, 0 |
+| warm (dense estimate) | rank_then_precision | 1.720, 83.444, 4.668, 1.892 | -21690.729 | 1.9384 / 1.0803 / 0.913 | 1.26% | 40/161/1/578 | 6.3 | 150, 0 |
+| warm (dense estimate) | joint | 1.711, 83.803, 4.692, 1.907 | -21690.699 | 1.9384 / 1.0804 / 0.913 | 1.24% | 47/155/0/578 | 6.3 | 151, 0 |
+| at dense estimate | dense | 1.725, 82.441, 4.628, 1.882 | -21690.761 | 1.9379 / 1.0800 / 0.913 | | | | 1, 0 |
+| at dense estimate | rank_only | 1.725, 82.441, 4.628, 1.882 | -21690.774 | 1.9379 / 1.0800 / 0.913 | | | | 1, 0 |
+| at dense estimate | rank_then_precision | 1.725, 82.441, 4.628, 1.882 | -21690.774 | 1.9379 / 1.0801 / 0.913 | | | | 1, 0 |
+| at dense estimate | joint | 1.725, 82.441, 4.628, 1.882 | -21690.767 | 1.9379 / 1.0801 / 0.913 | | | | 1, 0 |
+
+On the real data every compressed fit, from the SC26 start or from the dense estimate, ends at the dense optimum (own log-likelihood within 0.06 of the dense 21690.76; the dense fit's held-out RMSE 1.938 m/s, CRPS 1.080 m/s and coverage 0.913 are reproduced to the third digit), with 0 factorization failures, the two precision rules at 1.2% of the dense off-diagonal bytes (45 tiles in FP8, 157 in FP16, 578 dropped at rank 0 for the joint rule) against 5.0% for the rank rule alone. The parameters along the ridge differ by up to 5% between fits with the same log-likelihood, a property of the data under the linear mean, not of the approximation. The fitted nugget (1.8 to 1.9 relative) is larger than the SC26 value (0.93) because the linear mean explains less than the SC26 neural-network mean. N = 20,000 fits and the rounded-factor chains (16d) are added below as they finish.
+
+Reproduce (from codes/, Storrs):
+  for eta in 0.005 0.05 0.2; do for r in 0.3 0.1; do sbatch --job-name=joint-tol-eta$eta-r$r storrs_cpu.sbatch "18_joint_rank_precision_pilot.py --n 10000 --eta $eta --range $r --mp_eps 1e-2,1e-3,1e-4 --blr_eps 1e-2,1e-3,1e-4,1e-5 --extra_rows --out ../results/joint_tol/eta${eta}_r$r"; done; done
+  for n in 10000 20000 40000; do sbatch --job-name=gust-tol-n$n storrs_cpu_big.sbatch "39_joint_windgust.py --n $n --b 250 --mp_eps 1e-2,1e-3,1e-4 --blr_eps 1e-2,1e-3,1e-4,1e-5 --extra_rows --out ../results/joint_windgust_tol"; done
+  sbatch --job-name=joint-fit-n10000 storrs_cpu.sbatch "40_joint_fit_pilot.py --n 10000 --out ../results/joint_fit"; sbatch --job-name=joint-fit-n10000-r01 storrs_cpu.sbatch "40_joint_fit_pilot.py --n 10000 --range 0.1 --out ../results/joint_fit_range0.1"; sbatch --job-name=joint-fit-n20000 storrs_cpu_big.sbatch "40_joint_fit_pilot.py --n 20000 --out ../results/joint_fit"
+  for rule in dense rank_only rank_then_precision joint; do sbatch --job-name=gust-fit-n10000-$rule storrs_cpu.sbatch "41_windgust_fit.py --n 10000 --rules $rule --restarts 3 --out ../results/windgust_fit/$rule"; done
+  for rule in rank_only rank_then_precision joint; do sbatch --job-name=gust-fitw-n10000-$rule storrs_cpu.sbatch "41_windgust_fit.py --n 10000 --rules $rule --restarts 2 --start 1.7253,82.4407,4.6283,1.8822 --out ../results/windgust_fit/warm/$rule"; done
+  sbatch --job-name=gust-eval-n10000 storrs_cpu.sbatch "41_windgust_fit.py --n 10000 --rules dense,rank_only,rank_then_precision,joint --eval_at 1.7253,82.4407,4.6283,1.8822 --out ../results/windgust_fit/eval"
+  (chains, 16d) k=1; for cfg in "101 1.3,0.8,1.5" "102 0.6,1.4,0.5" "103 2.0,0.5,2.0" "104 0.8,1.2,0.8" "105 1.3,0.8,1.5" "106 0.6,1.4,0.5" "107 2.0,0.5,2.0" "108 0.8,1.2,0.8"; do set -- $cfg; for rule in joint rtp; do sbatch --requeue --job-name=mcmc-$rule-c$k storrs_cpu.sbatch "38_tlr_cholesky_mcmc.py --n 5000 --rule $rule:0.9 --iters 4000 --burn 1000 --chain_seed $1 --start_mult $2 --out ../results/mcmc_tlrchol/${rule}_0.9/c$k"; done; k=$((k+1)); done
+  (per evaluation at N = 10,000: dense 3 to 5 s, compressed 15 to 30 s on 16 cores; the chains run 4 to 11 s per iteration on shared nodes and resume from ckpt_n5000.npz when resubmitted)
+
+**16d. Metropolis-Hastings driven by the rounded factors** (`codes/38_tlr_cholesky_mcmc.py --rule joint:0.9`; same data, prior, dispersed starts and self-tuned proposal as section 14; N = 5,000, b = 250; 4,000 iterations, burn-in 1,000; the rank and the storage precision of every tile re-chosen under the budget at every proposal, Sigma^TLR assembled from the rounded factors and factorized densely). Four of the eight chains launched had finished by 14:00 on 2026-10-24 (c2, c5, c6, c7; 4.1 to 5.4 s per iteration on shared 16-core nodes); the others, and the eight `rtp:0.9` (rank then lowest admissible precision) chains, are added when they finish. Pooled over the four chains (12,000 draws) against the exact posterior of section 14 (four dense chains, 32,000 draws):
+
+| | sigma2 | range | nugget |
+|---|---|---|---|
+| pooled mean, rounded factors | 1.527 | 0.3474 | 0.0411 |
+| pooled mean, exact | 1.485 | 0.3456 | 0.0420 |
+| mean difference in exact posterior SD | +0.05 | +0.03 | -0.05 |
+| SD ratio over exact | 1.05 | 1.03 | 0.99 |
+| split R-hat / bulk ESS (4 chains) | 1.016 / 254 | 1.014 / 256 | 1.015 / 252 |
+
+Monte Carlo standard error of the pooled means, in exact posterior SD: 0.06 for every parameter, so the 0.03 to 0.05 differences are within Monte Carlo error. Acceptance 0.30 to 0.32, 0 factorization failures in 16,000 proposals, held-out RMSE 0.234 / CRPS 0.132 / 90% coverage 0.94 at the posterior mean (the exact chains: 0.234 / 0.132 / 0.94), stored lower triangle including the dense FP64 diagonal tiles 0.13 of the dense factor at the posterior mean. For reference the rank-only TLR Cholesky chains of section 14 differ from exact by 0.02 to 0.03 SD with SD ratios 0.98 to 0.99 at ESS near 750. Outputs: `mcmc_tlrchol/joint_0.9/c*/`, `logs/mcmc-joint-c*.out`.
+
+**16e. The rounded factorization with recompression** (`codes/17_tlr_cholesky_pilot.py --rules adaptive:0.9,mixed:0.9,fixed:1e-4`; rule `mixed` = the adaptive rank rule plus the storage precision of every low-rank factor pair chosen under the same budget, FP8 E4M3 / FP16 / FP32 / FP64, rounded at the initial compression, after every recompression and after every panel solve; FP64 arithmetic; the budget left for rounding is e_max minus the truncation error of the tile, and e_max for the factor tiles after the panel solve). Nothing dense is formed; this is the Objective 3 algorithm inside the TLR Cholesky factorization of section 4, the first time anything rounded went through a recompressing factorization in these pilots. Same field and seed as section 4. Factor bytes count the dense FP64 diagonal tiles and 2 b r p / 8 per off-diagonal factor tile, relative to the dense FP64 factor (N(N+1)/2 values x 8 bytes).
+
+| N | rule | completed | factor bytes / dense factor | factor tiles FP8/FP16/FP32/FP64 | mean rank | log-lik difference at theta_true | RMSE / CRPS / 90% cover |
+|---|---|---|---|---|---|---|---|
+| 10,000 | adaptive 0.9, FP64 | yes | 9.3% | 0/0/0/780 | 5.6 | +0.26 | 0.2058 / 0.1159 / 0.937 |
+| 10,000 | mixed 0.9 | yes | 6.5% | 49/545/186/0 | 5.8 | +0.43 | 0.2058 / 0.1159 / 0.930 |
+| 10,000 | fixed 1e-4, FP64 | yes | 11.3% | 0/0/0/780 | 8.1 | -2.59 | 0.2056 / 0.1159 / 0.937 |
+
+Inside the factorization most factor tiles qualify for FP16 (their norms are smaller than those of the covariance tiles), so the rounded factor takes 0.70 of the rank-only factor's bytes, less than the 0.5 of the explicitly formed matrix would suggest only because the dense FP64 diagonal tiles (2.5% of the dense factor at N = 10,000, b = 250) are now a third of what is stored. The rounding adds 0.17 to the log-likelihood difference (0.43 against 0.26, both within the tau/sqrt(2) = 0.64 scale of section 12 for this field) and changes the 90% coverage by two of the 300 held-out points. N = 20,000 and 40,000 rows and the maximum likelihood fit with the mixed rule (`tlr_cholesky_mixed/tlr_cholesky_n{N}.json`, jobs tlrchol-mixed-n{10000,20000,40000}) are added as they finish. Outputs: `tlr_cholesky_mixed/rules_only/tlr_cholesky_n10000.json`, `logs/tlrchol-mixed-*.out`.
+
+**16c, N = 20,000 (added as they finished).** Dense fit from the SC26 start (240 evaluations, restart confirmed): theta = (2.617, 34.490, 5.389, 0.895), own log-likelihood -42732.52, held-out RMSE 1.970 / CRPS 1.084 / 90% coverage 0.883. Joint rule started at the dense estimate: theta = (2.617, 34.490, 5.388, 0.895), own log-likelihood -42733.12, RMSE 1.970 / CRPS 1.084 / coverage 0.883, 0.56% of the dense off-diagonal bytes, tiles FP8/FP16/FP32/FP64 107/332/0/2721, 118 evaluations, 0 failures. The cold-start compressed fits at N = 20,000 (about 100 s per evaluation on shared nodes) and the remaining warm-start fits are added when they finish (`windgust_fit/*/windgust_fit_n20000.json`).
